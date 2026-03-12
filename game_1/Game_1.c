@@ -1,5 +1,6 @@
 #include "Game_1.h"
 #include "InputHandler.h"
+#include "Joystick.h"
 #include "Menu.h"
 #include "LCD.h"
 #include "PWM.h"
@@ -10,6 +11,8 @@
 extern ST7789V2_cfg_t cfg0;
 extern PWM_cfg_t pwm_cfg;      // LED PWM control
 extern Buzzer_cfg_t buzzer_cfg; // Buzzer control
+extern Joystick_cfg_t joystick_cfg; // Joystick configuration
+extern Joystick_t joystick_data; // Joystick data structure
 
 /**
  * @brief Game 1 Implementation - Student can modify
@@ -27,11 +30,47 @@ static int8_t move_direction = 1;
 // Frame rate for this game (in milliseconds)
 #define GAME1_FRAME_TIME_MS 30  // ~33 FPS
 
+// ===== UTILITY FUNCTIONS =====
+
+// ===== CHARACTER FSM VARIABLES =====
+// Global character object
+Character_1 game_character;
+
+// Dash button state
+volatile uint8_t dash_button_pressed = 0;
+
+// Last debounce timestamp for dash button
+volatile uint32_t dash_button_last_interrupt_time = 0;
+
+// Debounce delay in milliseconds - prevents multiple triggers from single button press
+#define DEBOUNCE_DELAY 200
+
+/**
+ * @brief Get character state name
+ */
+const char* get_char_state_name(CharacterState_1 state) {
+    switch (state) {
+        case CHAR_IDLE:    return "IDLE";
+        case CHAR_WALKING: return "WALK";
+        case CHAR_DASHING: return "DASH";
+        default:           return "???";
+    }
+}
+
+
+
+
+
+
 MenuState Game1_Run(void) {
     // Initialize game state
-    animation_counter = 0;
-    moving_x = 0;
-    move_direction = 1;
+    
+    // Initialize Character
+    Character_Init(&game_character);
+
+    // make screen black
+    LCD_Fill_Buffer(0);
+    LCD_Refresh(&cfg0);
     
     // Play a brief startup sound
     buzzer_tone(&buzzer_cfg, 1000, 30);  // 1kHz at 30% volume
@@ -48,49 +87,26 @@ MenuState Game1_Run(void) {
         Input_Read();
         
         // Check if button was pressed to return to menu
-        if (current_input.btn3_pressed) {
+        if (current_input.btn2_pressed) {
             PWM_SetDuty(&pwm_cfg, 50);  // Reset LED to 50% when returning
             exit_state = MENU_STATE_HOME;
             break;  // Exit game loop
         }
         
         // UPDATE: Game logic
-        animation_counter++;
+                
+                
+        // Read joystick input
+        Joystick_Read(&joystick_cfg, &joystick_data);
         
-        // Simple animation: move object back and forth
-        moving_x += move_direction * 3;
-        if (moving_x >= 200 || moving_x <= 0) {
-            move_direction *= -1;
-        }
+        // Update character FSM (logic only)
+        update_character(&joystick_data);
         
-        // Example: Vary LED brightness based on animation
-        uint8_t brightness = (moving_x * 100) / 200;
-        PWM_SetDuty(&pwm_cfg, brightness);
+        // Render everything to screen
+        render_game();
+          
         
-        // RENDER: Draw to LCD
-        LCD_Fill_Buffer(0);
-        
-        // Title
-        LCD_printString("GAME 1", 60, 10, 1, 3);
-        
-        // Simple animated object (moving box)
-        LCD_printString("[*]", 20 + moving_x, 100, 1, 3);
-        
-        // Display counter
-        char counter[32];
-        sprintf(counter, "Frame: %lu", animation_counter);
-        LCD_printString(counter, 50, 150, 1, 2);
-        
-        // Show PWM LED usage
-        LCD_printString("LED: PWM Demo", 30, 180, 1, 1);
-        char pwm_str[32];
-        sprintf(pwm_str, "Brightness: %d%%", brightness);
-        LCD_printString(pwm_str, 30, 195, 1, 1);
-        
-        // Instructions
-        LCD_printString("Press BT3 to", 40, 220, 1, 1);
-        LCD_printString("Return to Menu", 40, 235, 1, 1);
-        
+        // Refresh LCD with new frame
         LCD_Refresh(&cfg0);
         
         // Frame timing - wait for remainder of frame time
@@ -101,4 +117,225 @@ MenuState Game1_Run(void) {
     }
     
     return exit_state;  // Tell main where to go next
+}
+
+
+// Character functions
+
+// ===== ANIMATION SPRITES =====
+
+const uint8_t CharacterIDLE[8][8] = {
+    {255, 255, 0, 0, 0, 0, 255, 255},
+    {255, 255, 0, 0, 0, 0, 255, 255},
+    {255, 0, 0, 255, 255, 0, 0, 255},
+    {255, 0, 0, 0, 0, 0, 0, 255},
+    {255, 0, 255, 255, 255, 255, 0, 255},
+    {255, 0, 255, 255, 255, 255, 0, 255},
+    {255, 255, 0, 255, 255, 0, 255, 255},
+    {255, 255, 0, 255, 255, 0, 255, 255}
+};
+
+/**
+ * @brief WALKING animation frame 1
+ * 8x8 pixel sprite
+ */
+const uint8_t CharacterWALK1[8][8] = {
+    {255, 255, 0, 0, 0, 0, 255, 255},
+    {255, 255, 0, 0, 0, 0, 255, 255},
+    {255, 0, 0, 255, 255, 0, 0, 255},
+    {255, 0, 0, 0, 0, 0, 0, 255},
+    {255, 0, 255, 255, 255, 0, 0, 255},
+    {255, 0, 255, 255, 0, 255, 255, 255},
+    {255, 255, 0, 0, 255, 0, 255, 255},
+    {255, 255, 0, 255, 255, 255, 0, 255}
+};
+
+/**
+ * @brief WALKING animation frame 2
+ * 8x8 pixel sprite
+ */
+const uint8_t CharacterWALK2[8][8] = {
+    {255, 255, 0, 0, 0, 0, 255, 255},
+    {255, 255, 0, 0, 0, 0, 255, 255},
+    {255, 0, 0, 255, 255, 0, 0, 255},
+    {255, 0, 0, 0, 0, 0, 0, 255},
+    {255, 0, 0, 255, 255, 255, 255, 255},
+    {255, 0, 255, 255, 0, 255, 255, 255},
+    {255, 255, 0, 255, 255, 0, 0, 255},
+    {255, 255, 255, 0, 255, 255, 0, 255}
+};
+
+/**
+ * @brief DASHING animation - Speed lines around character
+ * 8x8 pixel sprite showing dashing/moving fast
+ */
+const uint8_t CharacterDASHING[8][8] = {
+    {255, 0, 0, 255, 255, 0, 0, 255},
+    {0, 255, 255, 255, 255, 255, 255, 0},
+    {0, 255, 0, 0, 0, 0, 255, 0},
+    {255, 255, 0, 255, 255, 0, 255, 255},
+    {255, 255, 0, 255, 255, 0, 255, 255},
+    {0, 255, 0, 0, 0, 0, 255, 0},
+    {0, 255, 255, 255, 255, 255, 255, 0},
+    {255, 0, 0, 255, 255, 0, 0, 255}
+};
+
+// ===== IMPLEMENTATION =====
+
+/**
+ * Initialize character at screen center
+ */
+void Character_Init(Character_1* character) {
+    character->x = 120;
+    character->y = 120;
+    character->state = CHAR_IDLE;
+    character->animation_frame = 0;
+    character->frame_counter = 0;
+    character->dash_counter = 0;
+}
+
+/**
+ * Update character position and state
+ * 
+ * Movement: Use joystick->direction for 8-way movement
+ * State: IDLE when stopped, WALKING when moving, DASHING on button press
+ */
+void Character_Update(Character_1* character, Joystick_t* joy, uint8_t dash_pressed) {
+    
+    // ===== STEP 1: Calculate movement based on joystick direction =====
+    int16_t move_x = 0;
+    int16_t move_y = 0;
+    
+    switch (joy->direction) {
+        case N:  move_y = -1; break;
+        case NE: move_x = 1; move_y = -1; break;
+        case E:  move_x = 1; break;
+        case SE: move_x = 1; move_y = 1; break;
+        case S:  move_y = 1; break;
+        case SW: move_x = -1; move_y = 1; break;
+        case W:  move_x = -1; break;
+        case NW: move_x = -1; move_y = -1; break;
+        default: break;  // CENTRE - no movement
+    }
+    
+    // ===== STEP 2: Handle dash button =====
+    if (dash_pressed && character->dash_counter == 0) {
+        character->dash_counter = CHAR_DASH_DURATION;
+    }
+    
+    // ===== STEP 3: Apply movement with speed (normal or dash) =====
+    uint8_t current_speed = CHAR_SPEED;
+    if (character->dash_counter > 0) {
+        current_speed = CHAR_DASH_SPEED;
+        character->dash_counter--;
+    }
+    
+    int16_t new_x = character->x + (move_x * current_speed);
+    int16_t new_y = character->y + (move_y * current_speed);
+    
+    // Keep on screen (sprite is 32x32 after 4x scaling)
+    if (new_x < 20) new_x = 20;
+    if (new_x > 220) new_x = 220;
+    if (new_y < 20) new_y = 20;
+    if (new_y > 220) new_y = 220;
+    
+    if (move_x != 0 || move_y != 0) {
+        character->x = new_x;
+        character->y = new_y;
+    }
+    
+    // ===== STEP 4: Update state (IDLE, WALKING, DASHING) =====
+    uint8_t is_moving = (move_x != 0 || move_y != 0);
+    
+    if (character->dash_counter > 0) {
+        character->state = CHAR_DASHING;
+    } else if (is_moving) {
+        character->state = CHAR_WALKING;
+    } else {
+        character->state = CHAR_IDLE;
+    }
+    
+    // ===== STEP 5: Update animation frame for walk cycle =====
+    if (character->state == CHAR_WALKING) {
+        character->frame_counter++;
+        if (character->frame_counter >= 10) {
+            character->frame_counter = 0;
+            character->animation_frame = (character->animation_frame + 1) % 2;
+        }
+    } else {
+        character->animation_frame = 0;
+        character->frame_counter = 0;
+    }
+}
+
+/**
+ * Draw character sprite based on current state
+ */
+void Character_Draw(Character_1* character) {
+    
+    int16_t x_pos = character->x - 16;  // 8x8 sprite * 4x scale = 16 offset
+    int16_t y_pos = character->y - 16;
+    
+    switch (character->state) {
+        case CHAR_IDLE:
+            LCD_Draw_Sprite_Colour_Scaled(x_pos, y_pos, 8, 8, (uint8_t*)CharacterIDLE, 5, 4);
+            break;
+        
+        case CHAR_WALKING:
+            if (character->animation_frame == 0) {
+                LCD_Draw_Sprite_Colour_Scaled(x_pos, y_pos, 8, 8, (uint8_t*)CharacterWALK1, 5, 4);
+            } else {
+                LCD_Draw_Sprite_Colour_Scaled(x_pos, y_pos, 8, 8, (uint8_t*)CharacterWALK2, 5, 4);
+            }
+            break;
+        
+        case CHAR_DASHING:
+            LCD_Draw_Sprite_Colour_Scaled(x_pos, y_pos, 8, 8, (uint8_t*)CharacterDASHING, 6, 4);
+            break;
+    }
+}
+
+void render_game(void) {
+    // Clear screen buffer
+    LCD_Fill_Buffer(0);
+    
+    // Draw character at current position with animation
+    Character_Draw(&game_character);
+    
+    // Draw debug info
+    LCD_printString("St:", 10, 5, 1, 2);
+    LCD_printString((char*)get_char_state_name(game_character.state), 60, 5, 1, 2);
+    
+    char pos_str[24];
+    sprintf(pos_str, "X:%d Y:%d", game_character.x, game_character.y);
+    LCD_printString(pos_str, 120, 5, 1, 2);
+    
+    // Refresh LCD to display this frame
+    LCD_Refresh(&cfg0);
+}
+
+void update_character(Joystick_t* joy) {
+    // Check if dash was pressed and clear the flag
+    uint8_t dash_pressed = dash_button_pressed;
+    dash_button_pressed = 0;
+    
+    // Update character FSM with current input
+    Character_Update(&game_character, joy, dash_pressed);
+}
+
+void HAL_GPIO_EXTI_Callback_1(uint16_t GPIO_Pin) {
+  uint32_t current_time = HAL_GetTick();
+  
+  // Check if dash button (BTN3) was pressed
+  if (GPIO_Pin == BTN3_Pin)
+  {
+    // Debouncing: ignore interrupts that happen too quickly (within 200ms)
+    if ((current_time - dash_button_last_interrupt_time) > DEBOUNCE_DELAY)
+    {
+      dash_button_last_interrupt_time = current_time;
+      
+      // Set flag to trigger dash in the character FSM
+      dash_button_pressed = 1;
+    }
+  }
 }
