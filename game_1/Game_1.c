@@ -51,7 +51,7 @@ const char* get_char_state_name(CharacterState_1 state) {
         case CHAR_IDLE:    return "IDLE";
         case CHAR_WALKING: return "WALK";
         case CHAR_DASHING: return "DASH";
-        case CHAR_JUMPING: return "JUMP";
+        //case CHAR_JUMPING: return "JUMP";
         default:           return "???";
     }
 }
