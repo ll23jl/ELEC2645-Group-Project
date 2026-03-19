@@ -46,21 +46,19 @@ typedef struct {
 #define CHAR_DASH_SPEED 10          // Pixels per frame (dashing)
 #define CHAR_JUMP_SPEED 8           // Pixels per frame (jumping)
 #define CHAR_DASH_DURATION 30       // Frames (dash lasts this long)
-#define CHAR_JUMP_DURATION 10       // Frames (jump lasts this long)
+#define CHAR_JUMP_DURATION 5       // Frames (jump lasts this long)
+#define GRAVITY -10
 
 // Character function prototypes
 void Character_Init(Character_1* character);
 
-void Character_Update(Character_1* character, Joystick_t* joy, uint8_t dash_pressed);
+void Character_Update(Character_1* character, Joystick_t* joy, uint8_t dash_pressed, uint8_t jump_pressed);
 
 void Character_Draw(Character_1* character);
 
-// ===== FUNCTION PROTOTYPES =====
 void update_character(Joystick_t* joy);
+
 void render_game(void);
-
-void HAL_GPIO_EXTI_Callback_1(uint16_t GPIO_Pin);
-
 
 MenuState Game1_Run(void);
 

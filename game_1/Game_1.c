@@ -42,8 +42,12 @@ volatile uint8_t jump_button_pressed = 0;
 // Last debounce timestamp for dash button
 volatile uint32_t dash_button_last_interrupt_time = 0;
 
+// Last debounce timestamp for jump button
+volatile uint32_t jump_button_last_interrupt_time = 0;
+
 // Debounce delay in milliseconds - prevents multiple triggers from single button press
-#define DEBOUNCE_DELAY 200
+#define DEBOUNCE_DELAY_DASH 200
+#define DEBOUNCE_DELAY_JUMP 500
 
 //Get character state name
 const char* get_char_state_name(CharacterState_1 state) {
@@ -98,12 +102,24 @@ MenuState Game1_Run(void) {
         // Check if button was pressed to dash
         if (current_input.btn3_pressed) {
             uint32_t current_time = HAL_GetTick();
-            if ((current_time - dash_button_last_interrupt_time) > DEBOUNCE_DELAY)
+            if ((current_time - dash_button_last_interrupt_time) > DEBOUNCE_DELAY_DASH)
             {
                 dash_button_last_interrupt_time = current_time;
       
                 // Set flag to trigger dash in the character FSM
                 dash_button_pressed = 1;
+            }
+        }
+
+        // Check if button was pressed to jump
+        if (current_input.btn4_pressed) {
+            uint32_t current_time = HAL_GetTick();
+            if ((current_time - jump_button_last_interrupt_time) > DEBOUNCE_DELAY_JUMP)
+            {
+                jump_button_last_interrupt_time = current_time;
+      
+                // Set flag to trigger jump in the character FSM
+                jump_button_pressed = 1;
             }
         }
         
@@ -327,51 +343,55 @@ void Character_Init(Character_1* character) {
  * Movement: Use joystick->direction for 8-way movement
  * State: IDLE when stopped, WALKING when moving, DASHING on button press
  */
-void Character_Update(Character_1* character, Joystick_t* joy, uint8_t dash_pressed) {
+void Character_Update(Character_1* character, Joystick_t* joy, uint8_t dash_pressed, uint8_t jump_pressed) {
     
-    // ===== STEP 1: Calculate movement based on joystick direction =====
+    // ===== Calculate movement based on joystick direction =====
     int16_t move_x = 0;
     int16_t move_y = 0;
     
     switch (joy->direction) {
-        case N:  move_y = -1; break;
-        case NE: move_x = 1; move_y = -1; break;
-        case E:  move_x = 1; break;
-        case SE: move_x = 1; move_y = 1; break;
-        case S:  move_y = 1; break;
-        case SW: move_x = -1; move_y = 1; break;
-        case W:  move_x = -1; break;
-        case NW: move_x = -1; move_y = -1; break;
-        default: break;  // CENTRE - no movement
+        case E:  move_x = 1; break;                 // move right
+        case W:  move_x = -1; break;                // move left
+        default: move_x = 0; move_y = 0; break;     // no movement
     }
     
-    // ===== STEP 2: Handle dash button =====
+    // ===== Handle jump button =====
+    if (jump_pressed && character->jump_counter == 0) {
+        character->jump_counter = CHAR_JUMP_DURATION;
+    }
+
+
+    // ===== Handle dash button =====
     if (dash_pressed && character->dash_counter == 0) {
         character->dash_counter = CHAR_DASH_DURATION;
     }
     
-    // ===== STEP 3: Apply movement with speed (normal or dash) =====
+    // ===== Apply movement with speed (normal or dash) =====
     uint8_t current_speed = CHAR_SPEED;
     if (character->dash_counter > 0) {
         current_speed = CHAR_DASH_SPEED;
         character->dash_counter--;
     }
+    if (character->jump_counter > 0) {
+        current_speed = CHAR_JUMP_SPEED;
+        move_y = -2;  // Force upward movement during jump
+        character->jump_counter--;
+    }
     
     int16_t new_x = character->x + (move_x * current_speed);
     int16_t new_y = character->y + (move_y * current_speed);
     
-    // Keep on screen (sprite is 32x32 after 4x scaling)
+    // Keep on screen 
     if (new_x < 20) new_x = 20;
     if (new_x > 220) new_x = 220;
     if (new_y < 20) new_y = 20;
-    if (new_y > 220) new_y = 220;
+    if (new_y > 210) new_y = 210;
     
-    if (move_x != 0 || move_y != 0) {
-        character->x = new_x;
-        character->y = new_y;
-    }
+    character->x = new_x;
+    character->y = new_y  - GRAVITY;
+
     
-    // ===== STEP 4: Update state (IDLE, WALKING, DASHING) =====
+    // ===== Update state (IDLE, WALKING, DASHING) =====
     uint8_t is_moving = (move_x != 0 || move_y != 0);
     
     if (character->dash_counter > 0) {
@@ -382,7 +402,7 @@ void Character_Update(Character_1* character, Joystick_t* joy, uint8_t dash_pres
         character->state = CHAR_IDLE;
     }
     
-    // ===== STEP 5: Update animation frame for walk cycle =====
+    // ===== Update animation frame for walk cycle =====
     if (character->state == CHAR_WALKING) {
         character->frame_counter++;
         if (character->frame_counter >= 10) {
@@ -449,8 +469,11 @@ void update_character(Joystick_t* joy) {
     // Check if dash was pressed and clear the flag
     uint8_t dash_pressed = dash_button_pressed;
     dash_button_pressed = 0;
+
+    uint8_t jump_pressed = jump_button_pressed;
+    jump_button_pressed = 0;
     
     // Update character FSM with current input
-    Character_Update(&game_character, joy, dash_pressed);
+    Character_Update(&game_character, joy, dash_pressed, jump_pressed);
 }
 
