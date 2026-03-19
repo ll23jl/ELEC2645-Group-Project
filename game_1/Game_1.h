@@ -26,8 +26,8 @@
 typedef enum {
     CHAR_IDLE = 0,      // Not moving
     CHAR_WALKING,       // Moving in a direction
-    CHAR_DASHING        // Fast movement
-    //CHAR_JUMPING        // Jumping
+    CHAR_DASHING,        // Fast movement
+    CHAR_JUMPING        // Jumping
 } CharacterState_1;
 
 // Character structure
