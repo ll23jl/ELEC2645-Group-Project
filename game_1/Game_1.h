@@ -27,6 +27,7 @@ typedef enum {
     CHAR_IDLE = 0,      // Not moving
     CHAR_WALKING,       // Moving in a direction
     CHAR_DASHING        // Fast movement
+    CHAR_JUMPING        // Jumping
 } CharacterState_1;
 
 // Character structure
@@ -37,12 +38,15 @@ typedef struct {
     uint8_t animation_frame;        // 0 or 1 (walk cycle)
     uint8_t frame_counter;          // Counter for animation timing
     uint8_t dash_counter;           // Frames remaining in dash
+    uint8_t jump_counter;           // Frames remaining in jump
 } Character_1;
 
 // Character constants
 #define CHAR_SPEED 5                // Pixels per frame (normal)
-#define CHAR_DASH_SPEED 10           // Pixels per frame (dashing)
+#define CHAR_DASH_SPEED 10          // Pixels per frame (dashing)
+#define CHAR_JUMP_SPEED 8           // Pixels per frame (jumping)
 #define CHAR_DASH_DURATION 30       // Frames (dash lasts this long)
+#define CHAR_JUMP_DURATION 10       // Frames (jump lasts this long)
 
 // Character function prototypes
 void Character_Init(Character_1* character);

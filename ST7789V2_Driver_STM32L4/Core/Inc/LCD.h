@@ -117,6 +117,13 @@ Written by Aeron Jarvis and James Avery
 #define RGB565_GREY_14  0x3CE7  // #e7e7e7
 #define RGB565_GREY_15  0xFFFF  // #ffffff
 
+// colours Jaz has added:
+#define CAT_DARK_GREEN 0x276c // #6B843A
+#define CAT_LIGHT_GREEN 0xefbe // #bddf7b
+#define CAT_DARK_BLUE 0xb953 // #5275ce
+#define CAT_MED_BLUE 0x5b6c // #6889e0
+#define CAT_LIGHT_BLUE 0xbda5 // #a5b6ef 
+#define CAT_PINK 0x97dd // #deb2bd
 
 
 // ========== Buffer Configuration ==========

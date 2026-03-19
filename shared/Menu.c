@@ -61,6 +61,8 @@ void Menu_Init(MenuSystem* menu) {
 MenuState Menu_Run(MenuSystem* menu) {
     static Direction last_direction = CENTRE;  // Track last direction for debouncing
     MenuState selected_game = MENU_STATE_HOME;  // Which game was selected
+
+    LCD_Set_Palette(PALETTE_DEFAULT); 
     
     // Menu's own loop - runs until game is selected
     while (1) {
