@@ -15,14 +15,6 @@ extern Buzzer_cfg_t buzzer_cfg; // Buzzer control
 extern Joystick_cfg_t joystick_cfg; // Joystick configuration
 extern Joystick_t joystick_data; // Joystick data structure
 
-/*
- * @brief Game 1 Implementation - Student can modify
- * 
- * EXAMPLE: Shows how to use PWM LED for visual feedback
- * This is a placeholder with a bouncing animation that changes LED brightness.
- * Replace this with your actual game logic!
- */
-
 
 // Frame rate for this game (in milliseconds)
 #define GAME1_FRAME_TIME_MS 30  // ~33 FPS
@@ -30,6 +22,7 @@ extern Joystick_t joystick_data; // Joystick data structure
 // ===== UTILITY FUNCTIONS =====
 
 // ===== CHARACTER FSM VARIABLES =====
+
 // Global character object
 Character_1 game_character;
 
@@ -45,7 +38,7 @@ volatile uint32_t dash_button_last_interrupt_time = 0;
 // Last debounce timestamp for jump button
 volatile uint32_t jump_button_last_interrupt_time = 0;
 
-// Debounce delay in milliseconds - prevents multiple triggers from single button press
+// Debounce delays in milliseconds - prevents multiple triggers from single button press
 #define DEBOUNCE_DELAY_DASH 200
 #define DEBOUNCE_DELAY_JUMP 500
 
@@ -64,7 +57,7 @@ const char* get_char_state_name(CharacterState_1 state) {
 }
 
 
-
+// ===== MAIN GAME LOOP =====
 MenuState Game1_Run(void) {
     // Initialize game state
     LCD_Set_Palette(PALETTE_CUSTOM); 
@@ -147,7 +140,6 @@ MenuState Game1_Run(void) {
 }
 
 
-// Character functions
 
 // ===== ANIMATION SPRITES =====
 
@@ -326,11 +318,9 @@ const uint8_t CharacterJUMPING[32][32] = {
     {255, 255, 255, 255, 255, 255, 5, 255, 5, 255, 255, 4, 4, 255, 255, 255, 5, 5, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255}
 };
 
-// ===== IMPLEMENTATION =====
+// ===== CHARACTER FUNCTIONS =====
 
-/**
- * Initialize character at screen center
- */
+ // Initialize character at screen center
 void Character_Init(Character_1* character) {
     character->x = 120;
     character->y = 120;
@@ -340,12 +330,7 @@ void Character_Init(Character_1* character) {
     character->dash_counter = 0;
 }
 
-/**
- * Update character position and state
- * 
- * Movement: Use joystick->direction for 8-way movement
- * State: IDLE when stopped, WALKING when moving, DASHING on button press
- */
+// Update character position and state based on joystick input and button presses
 void Character_Update(Character_1* character, Joystick_t* joy, uint8_t dash_pressed, uint8_t jump_pressed) {
     
     // ===== Calculate movement based on joystick direction =====
@@ -426,9 +411,7 @@ void Character_Update(Character_1* character, Joystick_t* joy, uint8_t dash_pres
     }
 }
 
-/**
- * Draw character sprite based on current state
- */
+// Draw character sprite based on current state and animation frame
 void Character_Draw(Character_1* character) {
     
     int16_t x_pos = character->x - 16;  // 8x8 sprite * 4x scale = 16 offset
@@ -473,6 +456,7 @@ void Character_Draw(Character_1* character) {
     }
 }
 
+// Render the game and character state to the LCD
 void render_game(void) {
     // Clear screen buffer
     LCD_Fill_Buffer(0);
@@ -492,6 +476,7 @@ void render_game(void) {
     LCD_Refresh(&cfg0);
 }
 
+// Calls Character_Update with current joystick input and button states
 void update_character(Joystick_t* joy) {
     // Check if dash was pressed and clear the flag
     uint8_t dash_pressed = dash_button_pressed;
