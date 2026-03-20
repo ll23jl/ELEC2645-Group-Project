@@ -53,9 +53,12 @@ volatile uint32_t jump_button_last_interrupt_time = 0;
 const char* get_char_state_name(CharacterState_1 state) {
     switch (state) {
         case CHAR_IDLE:    return "IDLE";
-        case CHAR_WALKING: return "WALK";
-        case CHAR_DASHING: return "DASH";
-        case CHAR_JUMPING: return "JUMP";
+        case CHAR_WALKING_L: return "WALK L";
+        case CHAR_WALKING_R: return "WALK R";
+        case CHAR_DASHING_L: return "DASH L";
+        case CHAR_DASHING_R: return "DASH R";
+        case CHAR_JUMPING_L: return "JUMP L";
+        case CHAR_JUMPING_R: return "JUMP R";
         default:           return "???";
     }
 }
@@ -379,31 +382,39 @@ void Character_Update(Character_1* character, Joystick_t* joy, uint8_t dash_pres
     }
     
     int16_t new_x = character->x + (move_x * current_speed);
-    int16_t new_y = character->y + (move_y * current_speed);
+    int16_t new_y = character->y + (move_y * current_speed) - GRAVITY;
     
     // Keep on screen 
     if (new_x < 20) new_x = 20;
     if (new_x > 220) new_x = 220;
     if (new_y < 20) new_y = 20;
-    if (new_y > 210) new_y = 210;
+    if (new_y > 220) new_y = 220;
     
     character->x = new_x;
-    character->y = new_y  - GRAVITY;
+    character->y = new_y;
 
     
     // ===== Update state (IDLE, WALKING, DASHING) =====
     uint8_t is_moving = (move_x != 0 || move_y != 0);
     
-    if (character->dash_counter > 0) {
-        character->state = CHAR_DASHING;
-    } else if (is_moving) {
-        character->state = CHAR_WALKING;
+    if (character->dash_counter > 0 && move_x == 1) {
+        character->state = CHAR_DASHING_R;
+    } else if (character->dash_counter > 0 && move_x == -1) {
+        character->state = CHAR_DASHING_L;
+    } else if (character->jump_counter > 0 && move_x == 1) {
+        character->state = CHAR_JUMPING_R;
+    } else if (character->jump_counter > 0 && move_x == -1) {
+        character->state = CHAR_JUMPING_L;
+    } else if (is_moving && move_x == 1) {
+        character->state = CHAR_WALKING_R;
+    } else if (is_moving && move_x == -1) {
+        character->state = CHAR_WALKING_L;
     } else {
         character->state = CHAR_IDLE;
     }
     
     // ===== Update animation frame for walk cycle =====
-    if (character->state == CHAR_WALKING) {
+    if (character->state == CHAR_WALKING_L || character->state == CHAR_WALKING_R) {
         character->frame_counter++;
         if (character->frame_counter >= 10) {
             character->frame_counter = 0;
@@ -425,23 +436,39 @@ void Character_Draw(Character_1* character) {
     
     switch (character->state) {
         case CHAR_IDLE:
-            LCD_Draw_Sprite(x_pos, y_pos, 32, 32, (uint8_t*)CharacterIDLE);
+            LCD_Draw_Sprite(x_pos, y_pos, 32, 32, (uint8_t*)CharacterIDLE, 1);
             break;
         
-        case CHAR_WALKING:
+        case CHAR_WALKING_L:
             if (character->animation_frame == 0) {
-                LCD_Draw_Sprite(x_pos, y_pos, 32, 32, (uint8_t*)CharacterWALK1);
+                LCD_Draw_Sprite(x_pos, y_pos, 32, 32, (uint8_t*)CharacterWALK1, 0);
             } else {
-                LCD_Draw_Sprite(x_pos, y_pos, 32, 32, (uint8_t*)CharacterWALK2);
+                LCD_Draw_Sprite(x_pos, y_pos, 32, 32, (uint8_t*)CharacterWALK2, 0);
+            }
+            break;
+
+        case CHAR_WALKING_R:
+            if (character->animation_frame == 0) {
+                LCD_Draw_Sprite(x_pos, y_pos, 32, 32, (uint8_t*)CharacterWALK1, 1);
+            } else {
+                LCD_Draw_Sprite(x_pos, y_pos, 32, 32, (uint8_t*)CharacterWALK2, 1);
             }
             break;
         
-        case CHAR_DASHING:
-            LCD_Draw_Sprite(x_pos, y_pos, 32, 32, (uint8_t*)CharacterDASHING);
+        case CHAR_DASHING_R:
+            LCD_Draw_Sprite(x_pos, y_pos, 32, 32, (uint8_t*)CharacterDASHING, 1);
             break;
 
-        case CHAR_JUMPING:
-            LCD_Draw_Sprite(x_pos, y_pos, 32, 32, (uint8_t*)CharacterJUMPING);
+        case CHAR_DASHING_L:
+            LCD_Draw_Sprite(x_pos, y_pos, 32, 32, (uint8_t*)CharacterDASHING, 0);
+            break;
+
+        case CHAR_JUMPING_R:
+            LCD_Draw_Sprite(x_pos, y_pos, 32, 32, (uint8_t*)CharacterJUMPING, 1);
+            break;
+
+        case CHAR_JUMPING_L:
+            LCD_Draw_Sprite(x_pos, y_pos, 32, 32, (uint8_t*)CharacterJUMPING, 0);
             break;
     }
 }
@@ -455,7 +482,7 @@ void render_game(void) {
     
     // Draw debug info
     LCD_printString("St:", 10, 5, 1, 2);
-    LCD_printString((char*)get_char_state_name(game_character.state), 60, 5, 1, 2);
+    LCD_printString((char*)get_char_state_name(game_character.state), 44, 5, 1, 2);
     
     char pos_str[24];
     sprintf(pos_str, "X:%d Y:%d", game_character.x, game_character.y);

@@ -1,4 +1,5 @@
 #include "LCD.h"
+#include <stdint.h>
 
 
 // Image buffer storing pixel data, 4 pixels per byte (2 bits per pixel)
@@ -346,7 +347,7 @@ void LCD_Draw_Rect(const uint16_t x0, const uint16_t y0, const uint16_t width, c
     }
 }
 
-void LCD_Draw_Sprite_Scaled(const uint16_t x0, const uint16_t y0, const uint16_t nrows, const uint16_t ncols, const uint8_t *sprite, const uint8_t scale){
+void LCD_Draw_Sprite_Scaled(const uint16_t x0, const uint16_t y0, const uint16_t nrows, const uint16_t ncols, const uint8_t *sprite, const uint8_t scale, const uint8_t direction){
   if (scale == 0) {
     return;
   }
@@ -355,7 +356,10 @@ void LCD_Draw_Sprite_Scaled(const uint16_t x0, const uint16_t y0, const uint16_t
     for (int j = 0 ; j < ncols ; j++) {
       const int pixel = *((sprite + i * ncols) + j);
       if (pixel != 255) {  // 255 is transparent
-        const uint16_t base_x = x0 + j * scale;
+        uint16_t base_x = x0 + j * scale;
+        if (direction == 1) {  // flip horizontally if direction is left
+          base_x = x0 + ncols - j * scale;
+        }
         const uint16_t base_y = y0 + i * scale;
         for (uint8_t dy = 0; dy < scale; dy++) {
           for (uint8_t dx = 0; dx < scale; dx++) {
@@ -367,8 +371,8 @@ void LCD_Draw_Sprite_Scaled(const uint16_t x0, const uint16_t y0, const uint16_t
   }
 }
 
-void LCD_Draw_Sprite(const uint16_t x0, const uint16_t y0, const uint16_t nrows, const uint16_t ncols, const uint8_t *sprite){
-  LCD_Draw_Sprite_Scaled(x0, y0, nrows, ncols, sprite, 1);
+void LCD_Draw_Sprite(const uint16_t x0, const uint16_t y0, const uint16_t nrows, const uint16_t ncols, const uint8_t *sprite, const uint8_t direction){
+  LCD_Draw_Sprite_Scaled(x0, y0, nrows, ncols, sprite, 1, direction);
 }
 
 void LCD_Draw_Sprite_Colour(const uint16_t x0, const uint16_t y0, const uint16_t nrows, const uint16_t ncols, const uint8_t *sprite, const uint8_t colour){

@@ -255,8 +255,9 @@ void LCD_Draw_Rect(const uint16_t x0, const uint16_t y0, const uint16_t width, c
 *   @param  y0 - y-coordinate of origin (top-left)
 *   @param  nrows - number of rows in sprite
 *   @param  ncols - number of columns in sprite
-*   @param  sprite - 2D array (255=transparent, 0=LCD_COLOUR_0/black, 1=LCD_COLOUR_1/white, etc.)*/
-void LCD_Draw_Sprite(const uint16_t x0, const uint16_t y0, const uint16_t nrows, const uint16_t ncols, const uint8_t *sprite);
+*   @param  sprite - 2D array (255=transparent, 0=LCD_COLOUR_0/black, 1=LCD_COLOUR_1/white, etc.)
+*   @param  direction - 0 for right, 1 for left */
+void LCD_Draw_Sprite(const uint16_t x0, const uint16_t y0, const uint16_t nrows, const uint16_t ncols, const uint8_t *sprite, const uint8_t direction);
 
 /* Draw Sprite with Colour Override
 *   This function draws a sprite with all non-transparent pixels set to the specified colour. 255 is transparent.
@@ -275,8 +276,9 @@ void LCD_Draw_Sprite_Colour(const uint16_t x0, const uint16_t y0, const uint16_t
 *   @param  nrows - number of rows in sprite
 *   @param  ncols - number of columns in sprite
 *   @param  sprite - 2D array (255=transparent, 0=LCD_COLOUR_0/black, 1=LCD_COLOUR_1/white, etc.)
-*   @param  scale - integer scale factor (1=original size, 2=double size, 3=triple, etc.)*/
-void LCD_Draw_Sprite_Scaled(const uint16_t x0, const uint16_t y0, const uint16_t nrows, const uint16_t ncols, const uint8_t *sprite, const uint8_t scale);
+*   @param  scale - integer scale factor (1=original size, 2=double size, 3=triple, etc.)
+*   @param  direction - 0 for right, 1 for left */
+void LCD_Draw_Sprite_Scaled(const uint16_t x0, const uint16_t y0, const uint16_t nrows, const uint16_t ncols, const uint8_t *sprite, const uint8_t scale, const uint8_t direction);
 
 /* Draw Sprite with Colour Override and Scaling
 *   This function draws a sprite scaled by an integer factor with all non-transparent pixels set to the specified colour.
