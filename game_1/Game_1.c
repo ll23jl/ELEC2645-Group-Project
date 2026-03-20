@@ -57,90 +57,6 @@ const char* get_char_state_name(CharacterState_1 state) {
 }
 
 
-// ===== MAIN GAME LOOP =====
-MenuState Game1_Run(void) {
-    // Initialize game state
-    LCD_Set_Palette(PALETTE_CUSTOM); 
-
-    // Initialize Character
-    Character_Init(&game_character);
-
-    // make screen black
-    LCD_Fill_Buffer(0);
-    LCD_Refresh(&cfg0);
-    
-    // Play a brief startup sound
-    buzzer_tone(&buzzer_cfg, 1000, 30);  // 1kHz at 30% volume
-    HAL_Delay(50);  // Brief beep duration
-    buzzer_off(&buzzer_cfg);  // Stop the buzzer
-    
-    MenuState exit_state = MENU_STATE_HOME;  // Default: return to menu
-    
-    // Game's own loop - runs until exit condition
-    while (1) {
-        uint32_t frame_start = HAL_GetTick();
-        
-        // Read input
-        Input_Read();
-        
-        // Check if button was pressed to return to menu
-        if (current_input.btn2_pressed) {
-            PWM_SetDuty(&pwm_cfg, 50);  // Reset LED to 50% when returning
-            exit_state = MENU_STATE_HOME;
-            break;  // Exit game loop
-        }
-        
-        // UPDATE: Game logic                
-                
-        // Read joystick input
-        Joystick_Read(&joystick_cfg, &joystick_data);
-
-        // Check if button was pressed to dash
-        if (current_input.btn3_pressed) {
-            uint32_t current_time = HAL_GetTick();
-            if ((current_time - dash_button_last_interrupt_time) > DEBOUNCE_DELAY_DASH)
-            {
-                dash_button_last_interrupt_time = current_time;
-      
-                // Set flag to trigger dash in the character FSM
-                dash_button_pressed = 1;
-            }
-        }
-
-        // Check if button was pressed to jump
-        if (current_input.btn4_pressed) {
-            uint32_t current_time = HAL_GetTick();
-            if ((current_time - jump_button_last_interrupt_time) > DEBOUNCE_DELAY_JUMP)
-            {
-                jump_button_last_interrupt_time = current_time;
-      
-                // Set flag to trigger jump in the character FSM
-                jump_button_pressed = 1;
-            }
-        }
-        
-        // Update character FSM (logic only)
-        update_character(&joystick_data);
-        
-        // Render everything to screen
-        render_game();
-          
-        
-        // Refresh LCD with new frame
-        LCD_Refresh(&cfg0);
-        
-        // Frame timing - wait for remainder of frame time
-        uint32_t frame_time = HAL_GetTick() - frame_start;
-        if (frame_time < GAME1_FRAME_TIME_MS) {
-            HAL_Delay(GAME1_FRAME_TIME_MS - frame_time);
-        }
-    }
-    
-    return exit_state;  // Tell main where to go next
-}
-
-
-
 // ===== ANIMATION SPRITES =====
 
 const uint8_t CharacterIDLE[32][32] = {
@@ -318,6 +234,124 @@ const uint8_t CharacterJUMPING[32][32] = {
     {255, 255, 255, 255, 255, 255, 5, 255, 5, 255, 255, 4, 4, 255, 255, 255, 5, 5, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255}
 };
 
+
+// ===== ENVIRONMENT SPRITES =====
+
+const uint8_t Room_1[30][30] = {
+    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+    {0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0},
+    {0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0},
+    {0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0},
+    {0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0},
+    {0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0},
+    {0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0},
+    {0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0},
+    {0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0},
+    {0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0},
+    {0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0},
+    {0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0},
+    {0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 0},
+    {0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0},
+    {0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0},
+    {0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0},
+    {0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0},
+    {0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0},
+    {0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0},
+    {0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0},
+    {0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0},
+    {0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 0},
+    {0, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 0},
+    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+};
+
+// ===== MAIN GAME LOOP =====
+MenuState Game1_Run(void) {
+    // Initialize game state
+    LCD_Set_Palette(PALETTE_CUSTOM); 
+
+    // Initialize Character
+    Character_Init(&game_character);
+
+    // make screen black
+    LCD_Fill_Buffer(0);
+    LCD_Refresh(&cfg0);
+    
+    // Play a brief startup sound
+    buzzer_tone(&buzzer_cfg, 1000, 30);  // 1kHz at 30% volume
+    HAL_Delay(50);  // Brief beep duration
+    buzzer_off(&buzzer_cfg);  // Stop the buzzer
+    
+    MenuState exit_state = MENU_STATE_HOME;  // Default: return to menu
+    
+    // Game's own loop - runs until exit condition
+    while (1) {
+        uint32_t frame_start = HAL_GetTick();
+        
+        // Read input
+        Input_Read();
+        
+        // Check if button was pressed to return to menu
+        if (current_input.btn2_pressed) {
+            PWM_SetDuty(&pwm_cfg, 50);  // Reset LED to 50% when returning
+            exit_state = MENU_STATE_HOME;
+            break;  // Exit game loop
+        }
+        
+        // UPDATE: Game logic                
+                
+        // Read joystick input
+        Joystick_Read(&joystick_cfg, &joystick_data);
+
+        // Check if button was pressed to dash
+        if (current_input.btn3_pressed) {
+            uint32_t current_time = HAL_GetTick();
+            if ((current_time - dash_button_last_interrupt_time) > DEBOUNCE_DELAY_DASH)
+            {
+                dash_button_last_interrupt_time = current_time;
+      
+                // Set flag to trigger dash in the character FSM
+                dash_button_pressed = 1;
+            }
+        }
+
+        // Check if button was pressed to jump
+        if (current_input.btn4_pressed) {
+            uint32_t current_time = HAL_GetTick();
+            if ((current_time - jump_button_last_interrupt_time) > DEBOUNCE_DELAY_JUMP)
+            {
+                jump_button_last_interrupt_time = current_time;
+      
+                // Set flag to trigger jump in the character FSM
+                jump_button_pressed = 1;
+            }
+        }
+        
+        // Update character FSM (logic only)
+        update_character(&joystick_data);
+        
+        // Render everything to screen
+        render_game();
+          
+        
+        // Refresh LCD with new frame
+        LCD_Refresh(&cfg0);
+        
+        // Frame timing - wait for remainder of frame time
+        uint32_t frame_time = HAL_GetTick() - frame_start;
+        if (frame_time < GAME1_FRAME_TIME_MS) {
+            HAL_Delay(GAME1_FRAME_TIME_MS - frame_time);
+        }
+    }
+    
+    return exit_state;  // Tell main where to go next
+}
+
 // ===== CHARACTER FUNCTIONS =====
 
  // Initialize character at screen center
@@ -488,4 +522,5 @@ void update_character(Joystick_t* joy) {
     // Update character FSM with current input
     Character_Update(&game_character, joy, dash_pressed, jump_pressed);
 }
+
 
