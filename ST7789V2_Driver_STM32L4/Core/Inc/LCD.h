@@ -269,6 +269,16 @@ void LCD_Draw_Sprite(const uint16_t x0, const uint16_t y0, const uint16_t nrows,
 *   @param  colour - Value from 0-15 referring to the colour map colour (replaces all non-transparent values)*/
 void LCD_Draw_Sprite_Colour(const uint16_t x0, const uint16_t y0, const uint16_t nrows, const uint16_t ncols, const uint8_t *sprite, const uint8_t colour);
 
+/* Update Background
+*   This function draws a  section of the backgroundsprite scaled by an integer factor.
+*   @param  x0 - x-coordinate of origin (top-left)
+*   @param  y0 - y-coordinate of origin (top-left)
+*   @param  nrows - number of rows in sprite
+*   @param  ncols - number of columns in sprite
+*   @param  sprite - 2D array (255=transparent, 0=LCD_COLOUR_0/black, 1=LCD_COLOUR_1/white, etc.)*/
+void LCD_Update_Background(const uint16_t x0, const uint16_t y0, const uint16_t nrows, const uint16_t ncols, const uint8_t *sprite);
+
+
 /* Draw Sprite Scaled
 *   This function draws a sprite scaled by an integer factor. Sprite values directly map to colour indices.
 *   @param  x0 - x-coordinate of origin (top-left)

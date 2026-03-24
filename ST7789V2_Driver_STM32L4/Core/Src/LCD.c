@@ -347,6 +347,27 @@ void LCD_Draw_Rect(const uint16_t x0, const uint16_t y0, const uint16_t width, c
     }
 }
 
+
+void LCD_Update_Background(const uint16_t x0, const uint16_t y0, const uint16_t nrows, const uint16_t ncols, const uint8_t *sprite) {
+
+  const uint8_t scale = 10;  
+
+  for (int i = x0-12; i < x0+nrows; i++) {
+    for (int j = y0-12 ; j < y0+ncols ; j++) {
+      const int pixel = *((sprite + i/scale * ncols) + j/scale);
+      if (pixel != 255) {  // 255 is transparent
+        const uint16_t base_x = x0 + j;
+        const uint16_t base_y = y0 + i;
+        for (uint8_t dy = 0; dy < scale; dy++) {
+          for (uint8_t dx = 0; dx < scale; dx++) {
+            LCD_Set_Pixel(base_x + dx, base_y + dy, pixel);
+          }
+        }
+      }
+    }
+  }
+}
+
 void LCD_Draw_Sprite_Scaled(const uint16_t x0, const uint16_t y0, const uint16_t nrows, const uint16_t ncols, const uint8_t *sprite, const uint8_t scale, const uint8_t direction){
   if (scale == 0) {
     return;

@@ -56,7 +56,6 @@ const char* get_char_state_name(CharacterState_1 state) {
     }
 }
 
-
 // ===== ANIMATION SPRITES =====
 
 const uint8_t CharacterIDLE[32][32] = {
@@ -237,38 +236,39 @@ const uint8_t CharacterJUMPING[32][32] = {
 
 // ===== ENVIRONMENT SPRITES =====
 
-const uint8_t Room_1[30][30] = {
-    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-    {0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0},
-    {0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0},
-    {0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0},
-    {0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0},
-    {0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0},
-    {0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0},
-    {0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0},
-    {0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0},
-    {0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0},
-    {0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0},
-    {0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0},
-    {0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 0},
-    {0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0},
-    {0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0},
-    {0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0},
-    {0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0},
-    {0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0},
-    {0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0},
-    {0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0},
-    {0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0},
-    {0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 0},
-    {0, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 0},
-    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+const uint8_t Block_sprite[3][3] = {
+    {2,2,2},
+    {2,2,2},
+    {2,2,2}
 };
+
+const uint8_t Background[24][24] = {
+{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 
+{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 
+{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 
+{0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0}, 
+{0, 0, 2, 2, 14, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0}, 
+{0, 0, 2, 2, 14, 2, 2, 2, 2, 14, 14, 2, 2, 2, 2, 2, 2, 14, 14, 2, 2, 2, 0, 0}, 
+{0, 0, 2, 2, 14, 14, 2, 2, 2, 2, 14, 14, 2, 2, 2, 2, 2, 14, 2, 2, 2, 2, 0, 0}, 
+{0, 0, 2, 2, 2, 14, 2, 2, 2, 2, 2, 14, 2, 2, 2, 2, 2, 14, 2, 2, 2, 2, 0, 0}, 
+{0, 0, 2, 2, 2, 14, 14, 2, 2, 2, 2, 14, 2, 2, 2, 2, 14, 2, 2, 2, 14, 14, 0, 0}, 
+{0, 0, 2, 2, 2, 2, 14, 2, 2, 2, 2, 14, 2, 2, 2, 14, 14, 2, 2, 14, 14, 2, 0, 0}, 
+{0, 0, 2, 2, 2, 14, 14, 2, 2, 2, 2, 14, 2, 2, 14, 14, 2, 2, 2, 14, 2, 2, 0, 0}, 
+{0, 0, 2, 2, 2, 14, 2, 2, 2, 2, 14, 14, 2, 14, 14, 2, 2, 2, 2, 14, 2, 2, 0, 0}, 
+{0, 0, 2, 2, 2, 14, 2, 2, 2, 2, 2, 14, 14, 14, 2, 2, 2, 2, 2, 14, 2, 2, 0, 0}, 
+{0, 0, 2, 2, 2, 14, 2, 2, 2, 2, 14, 14, 2, 2, 2, 2, 2, 2, 2, 14, 2, 2, 0, 0}, 
+{0, 0, 2, 14, 2, 14, 2, 2, 2, 2, 14, 2, 2, 2, 2, 2, 2, 2, 14, 14, 2, 2, 0, 0}, 
+{0, 0, 2, 2, 14, 2, 2, 2, 2, 14, 14, 2, 2, 2, 2, 2, 2, 2, 14, 2, 2, 2, 0, 0}, 
+{0, 0, 2, 2, 14, 2, 2, 2, 2, 14, 2, 14, 2, 2, 2, 2, 2, 2, 14, 2, 2, 2, 0, 0}, 
+{0, 0, 2, 2, 14, 2, 2, 2, 2, 14, 14, 14, 2, 2, 2, 2, 2, 2, 14, 2, 2, 2, 0, 0}, 
+{0, 0, 13, 13, 13, 13, 13, 14, 14, 14, 14, 14, 14, 13, 13, 13, 13, 13, 13, 13, 13, 13, 0, 0}, 
+{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 
+{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 
+{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 
+{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 
+{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+};
+
 
 // ===== MAIN GAME LOOP =====
 MenuState Game1_Run(void) {
@@ -281,6 +281,17 @@ MenuState Game1_Run(void) {
     // make screen black
     LCD_Fill_Buffer(0);
     LCD_Refresh(&cfg0);
+
+    // draw initial background
+    //LCD_Draw_Sprite_Scaled(0, 0, 24, 24, (uint8_t*)Background, 10, 0);
+
+    // Initialize environment objects
+    for (uint8_t i = 0; i < TARGET_COUNT; i++) {
+        Blocks[i].x = (rand() % 200) + 20;  // Random x between 20 and 220
+        Blocks[i].y = (rand() % 200) + 20;  // Random y between 20 and 220
+        Blocks[i].radius = 3;                // Set radius for collision
+
+    }
     
     // Play a brief startup sound
     buzzer_tone(&buzzer_cfg, 1000, 30);  // 1kHz at 30% volume
@@ -354,20 +365,24 @@ MenuState Game1_Run(void) {
 
 // ===== CHARACTER FUNCTIONS =====
 
- // Initialize character at screen center
+// Initialize character at screen center
 void Character_Init(Character_1* character) {
     character->x = 120;
     character->y = 120;
+    character->prev_x = 120;
+    character->prev_y = 120;
     character->state = CHAR_IDLE;
     character->animation_frame = 0;
     character->frame_counter = 0;
     character->dash_counter = 0;
+    character->jump_counter = 0;
+    character->radius = 16;
 }
 
 // Update character position and state based on joystick input and button presses
 void Character_Update(Character_1* character, Joystick_t* joy, uint8_t dash_pressed, uint8_t jump_pressed) {
     
-    // ===== Calculate movement based on joystick direction =====
+    // Calculate movement based on joystick direction
     int16_t move_x = 0;
     int16_t move_y = 0;
     
@@ -377,18 +392,19 @@ void Character_Update(Character_1* character, Joystick_t* joy, uint8_t dash_pres
         default: move_x = 0; move_y = 0; break;     // no movement
     }
     
-    // ===== Handle jump button =====
+
+    // Handle jump button
     if (jump_pressed && character->jump_counter == 0) {
         character->jump_counter = CHAR_JUMP_DURATION;
     }
 
 
-    // ===== Handle dash button =====
+    // Handle dash button
     if (dash_pressed && character->dash_counter == 0) {
         character->dash_counter = CHAR_DASH_DURATION;
     }
     
-    // ===== Apply movement with speed (normal or dash) =====
+    // Apply movement with speed
     uint8_t current_speed = CHAR_SPEED;
     if (character->dash_counter > 0) {
         current_speed = CHAR_DASH_SPEED;
@@ -403,12 +419,32 @@ void Character_Update(Character_1* character, Joystick_t* joy, uint8_t dash_pres
     int16_t new_x = character->x + (move_x * current_speed);
     int16_t new_y = character->y + (move_y * current_speed) - GRAVITY;
     
+    // Handle collisions
+
+    // Check if player overlaps with any objects
+    for (uint8_t i = 0; i < TARGET_COUNT; i++)
+    {
+      // Check collision between character and objects
+      if (collision(character->x, character->y, character->radius, Blocks[i].x, Blocks[i].y, Blocks[i].radius)) {
+        
+        // Collision detected - reset to previous position
+        new_x = character->prev_x;  
+        new_y = character->prev_y;
+      }
+    }
+
     // Keep on screen 
     if (new_x < 20) new_x = 20;
     if (new_x > 220) new_x = 220;
     if (new_y < 20) new_y = 20;
     if (new_y > 220) new_y = 220;
+
+
+    // update old position ( for background drawing)
+    character->prev_x = character->x;
+    character->prev_y = character->y;
     
+    // update position
     character->x = new_x;
     character->y = new_y;
 
@@ -445,10 +481,19 @@ void Character_Update(Character_1* character, Joystick_t* joy, uint8_t dash_pres
     }
 }
 
+// Update background when character moves
+void Background_Update(Character_1* character) {
+    int16_t x_pos = character->x - 12;  // 32x32 sprite 
+    int16_t y_pos = character->y - 12;
+
+    // Update background
+    LCD_Update_Background(x_pos, y_pos, 24, 24, (const uint8_t*)Background);
+}
+
 // Draw character sprite based on current state and animation frame
 void Character_Draw(Character_1* character) {
     
-    int16_t x_pos = character->x - 16;  // 8x8 sprite * 4x scale = 16 offset
+    int16_t x_pos = character->x - 16;  // 32x32 sprite 
     int16_t y_pos = character->y - 16;
     
     switch (character->state) {
@@ -494,6 +539,11 @@ void Character_Draw(Character_1* character) {
 void render_game(void) {
     // Clear screen buffer
     LCD_Fill_Buffer(0);
+
+    // Draw environment
+    //Background_Update(&game_character);
+    //LCD_Draw_Sprite_Scaled(0, 0, 24, 24, (uint8_t*)Background, 10, 0);
+    render_blocks();
     
     // Draw character at current position with animation
     Character_Draw(&game_character);
@@ -523,4 +573,20 @@ void update_character(Joystick_t* joy) {
     Character_Update(&game_character, joy, dash_pressed, jump_pressed);
 }
 
+// Check if character and object collide
+uint8_t collision(uint16_t x1, uint16_t y1, uint16_t r1, uint16_t x2, uint16_t y2, uint16_t r2) {
+  
+    int32_t dx = (int32_t)x2 - (int32_t)x1;
+  int32_t dy = (int32_t)y2 - (int32_t)y1;
+  int32_t dist_squared = (dx * dx) + (dy * dy);
+  int32_t radii_sum = r1 + r2;
+  int32_t radii_sum_squared = radii_sum * radii_sum;
+  
+  return (dist_squared <= radii_sum_squared) ? 1 : 0;
+}
 
+void render_blocks(void) {
+    for (uint8_t i = 0; i < TARGET_COUNT; i++) {
+        LCD_Draw_Sprite_Scaled(Blocks[i].x - Blocks[i].radius, Blocks[i].y - Blocks[i].radius, 3, 3, (uint8_t*)Block_sprite, 1, 0);
+    }
+}
