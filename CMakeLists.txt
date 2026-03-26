@@ -58,6 +58,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     ${CMAKE_SOURCE_DIR}/game_1/Game_1.c
     ${CMAKE_SOURCE_DIR}/game_2/Game_2.c
     ${CMAKE_SOURCE_DIR}/game_3/Game_3.c
+    ${CMAKE_SOURCE_DIR}/game_1/sprites.c
 )
 
 # Add include paths

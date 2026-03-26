@@ -125,6 +125,30 @@ Written by Aeron Jarvis and James Avery
 #define CAT_LIGHT_BLUE 0xbda5 // #a5b6ef 
 #define CAT_PINK 0x97dd // #deb2bd
 
+// ====== rainworld colours ============================== DELETE IF NOT USED
+// deep shadows
+#define RW2_BLACK        0x0100  // #110215
+#define RW2_DEEP_PURPLE  0x2508  // #0E042C
+#define RW2_DARK_MAROON  0x0718  // #2A051D
+// dark tones
+#define RW2_PLUM         0xA830  // #3E2B44
+#define RW2_DARK_RED     0x0948  // #460A28
+#define RW2_CRIMSON      0x0A88  // #721336
+// green tones
+#define RW2_DARK_TEAL    0xAB0A  // #0D5C52
+#define RW2_TEAL         0x6D0D  // #0AB794
+#define RW2_BRIGHT_TEAL  0xF816  // #0BE1C2
+#define RW2_CYAN_GLOW    0xFA7F  // #8FD0C8
+// blue-greys
+#define RW2_SLATE        0x8C1A  // #19323F
+#define RW2_STEEL        0xF232  // #324E60
+// highlights / contrast
+#define RW2_PINK         0xCFA1  // #A72E4B
+#define RW2_LIGHT_PINK   0xF2D2  // #A96D72
+// light tones
+#define RW2_LIGHT_GREY   0xFBD6  // #8FB1AA
+#define RW2_WHITE        0xFFFF  // #D8D7DB
+
 
 // ========== Buffer Configuration ==========
 #define BUFFER_LENGTH ST7789V2_HEIGHT*ST7789V2_WIDTH/2  // 4 pixels per byte (2 bits per pixel)
