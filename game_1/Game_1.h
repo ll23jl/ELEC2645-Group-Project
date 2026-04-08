@@ -22,26 +22,24 @@
 
 // =========================================================== Character definitions ===========================================================
 
-// Constants
-#define TARGET_COUNT 5
-
 // Character constants
 #define CHAR_SPEED 5                // Pixels per frame (normal)
 #define CHAR_DASH_SPEED 10          // Pixels per frame (dashing)
-#define CHAR_JUMP_SPEED 8           // Pixels per frame (jumping)
+#define CHAR_JUMP_SPEED 5           // Pixels per frame (jumping)
 #define CHAR_DASH_DURATION 30       // Frames (dash lasts this long)
-#define CHAR_JUMP_DURATION 5       // Frames (jump lasts this long)
+#define CHAR_JUMP_DURATION 5        // Frames (jump lasts this long)
 #define GRAVITY -10
+#define jump_height -4
 
 // Character states
 typedef enum {
-    CHAR_IDLE = 0,      // Not moving
-    CHAR_WALKING_L,       // Moving left
-    CHAR_WALKING_R,       // Moving right
-    CHAR_DASHING_L,        // Fast movement left
-    CHAR_DASHING_R,        // Fast movement right
-    CHAR_JUMPING_L,        // Jumping left
-    CHAR_JUMPING_R         // Jumping right
+    CHAR_IDLE = 0,          // Not moving
+    CHAR_WALKING_L,         // Moving left
+    CHAR_WALKING_R,         // Moving right
+    CHAR_DASHING_L,         // Fast movement left
+    CHAR_DASHING_R,         // Fast movement right
+    CHAR_JUMPING_L,         // Jumping left
+    CHAR_JUMPING_R          // Jumping right
 
 } CharacterState_1;
 
@@ -56,17 +54,11 @@ typedef struct {
     uint8_t frame_counter;          // Counter for animation timing
     uint8_t dash_counter;           // Frames remaining in dash
     uint8_t jump_counter;           // Frames remaining in jump
-    uint16_t radius;                // Collision radius
+    uint8_t width;                  // Collision width
+    uint8_t height;                 // Collision height
+    uint8_t frame;                  // Current frame for animation
 } Character_1;
 
-// Block structure
-typedef struct {
-    int16_t x;                      // X position
-    int16_t y;                      // Y position
-    uint16_t radius;                // Collision radius
-}Block;
-
-Block Blocks [TARGET_COUNT];
 
 
 
@@ -81,10 +73,7 @@ void update_character(Joystick_t* joy);
 
 void render_game(void);
 
-uint8_t collision(uint16_t x1, uint16_t y1, uint16_t r1, uint16_t x2, uint16_t y2, uint16_t r2);
-
 MenuState Game1_Run(void);
 
-void render_blocks(void);
 
 #endif // GAME_1_H

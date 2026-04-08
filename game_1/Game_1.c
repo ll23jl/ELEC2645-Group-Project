@@ -4,10 +4,14 @@
 #include "Menu.h"
 #include "LCD.h"
 #include "sprites.h"
+#include "rooms.h"
 #include "PWM.h"
 #include "Buzzer.h"
+#include "stm32_hal_legacy.h"
 #include "stm32l476xx.h"
 #include "stm32l4xx_hal.h"
+#include <math.h>
+#include <stdint.h>
 #include <stdio.h>
 
 extern ST7789V2_cfg_t cfg0;
@@ -71,16 +75,6 @@ MenuState Game1_Run(void) {
     LCD_Fill_Buffer(0);
     LCD_Refresh(&cfg0);
 
-    // draw initial background
-    //LCD_Draw_Sprite_Scaled(0, 0, 24, 24, (uint8_t*)Background, 10, 0);
-
-    // Initialize environment objects
-    for (uint8_t i = 0; i < TARGET_COUNT; i++) {
-        Blocks[i].x = (rand() % 200) + 20;  // Random x between 20 and 220
-        Blocks[i].y = (rand() % 200) + 20;  // Random y between 20 and 220
-        Blocks[i].radius = 8;                // Set radius for collision
-
-    }
     
     // Play a brief startup sound
     buzzer_tone(&buzzer_cfg, 1000, 30);  // 1kHz at 30% volume
@@ -165,7 +159,8 @@ void Character_Init(Character_1* character) {
     character->frame_counter = 0;
     character->dash_counter = 0;
     character->jump_counter = 0;
-    character->radius = 16;
+    character->width = 32;
+    character->height = 32;
 }
 
 // Update character position and state based on joystick input and button presses
@@ -181,12 +176,10 @@ void Character_Update(Character_1* character, Joystick_t* joy, uint8_t dash_pres
         default: move_x = 0; move_y = 0; break;     // no movement
     }
     
-
     // Handle jump button
     if (jump_pressed && character->jump_counter == 0) {
         character->jump_counter = CHAR_JUMP_DURATION;
     }
-
 
     // Handle dash button
     if (dash_pressed && character->dash_counter == 0) {
@@ -201,7 +194,7 @@ void Character_Update(Character_1* character, Joystick_t* joy, uint8_t dash_pres
     }
     if (character->jump_counter > 0) {
         current_speed = CHAR_JUMP_SPEED;
-        move_y = -2;  // Force upward movement during jump
+        move_y = jump_height;  // Force upward movement during jump
         character->jump_counter--;
     }
     
@@ -209,17 +202,40 @@ void Character_Update(Character_1* character, Joystick_t* joy, uint8_t dash_pres
     int16_t new_y = character->y + (move_y * current_speed) - GRAVITY;
     
     // Handle collisions
+    //Check if player overlaps with any objects
+    for (uint8_t i = 0; i < 15; i++)           // runs for size of the room - [15][15] blocks
+    {   for (uint8_t j = 0; j < 15; j++)
+        {
+            if (room_1[i][j] == 1) // if there is a block in the space
+            {
+                block current_block;
+                current_block.x = j * 16;     // Calculate block's x centre position
+                current_block.y = i * 16;     // Calculate block's y centre position
+                current_block.width = 10;       // Block width
+                current_block.height = 10;      // Block height
 
-    // Check if player overlaps with any objects
-    for (uint8_t i = 0; i < TARGET_COUNT; i++)
-    {
-      // Check collision between character and objects
-      if (collision(character->x, character->y, character->radius, Blocks[i].x, Blocks[i].y, Blocks[i].radius)) {
-        
-        // Collision detected - reset to previous position
-        new_x = character->prev_x;  
-        new_y = character->prev_y;
-      }
+                // handle x direction collisions
+                if (collision(new_x, character->y,
+                              character->width, character->height, 
+                              current_block.x, current_block.y,
+                              current_block.width, current_block.height)) {
+                    
+                    // Collision detected - cancel movement
+                    new_x = character->x;
+                    break;
+                }
+                // handle y direction collisions
+                if (collision(new_x, new_y,
+                              character->width, character->height, 
+                              current_block.x, current_block.y,
+                              current_block.width, current_block.height)) {
+                    
+                    // Collision detected - cancel movement
+                    new_y = character->y;
+                    break;
+                }
+            }
+        }
     }
 
     // Keep on screen 
@@ -268,15 +284,6 @@ void Character_Update(Character_1* character, Joystick_t* joy, uint8_t dash_pres
         character->animation_frame = 0;
         character->frame_counter = 0;
     }
-}
-
-// Update background when character moves
-void Background_Update(Character_1* character) {
-    int16_t x_pos = character->x - 12;  // 32x32 sprite 
-    int16_t y_pos = character->y - 12;
-
-    // Update background
-    //LCD_Update_Background(x_pos, y_pos, 24, 24, (const uint8_t*)Background);
 }
 
 // Draw character sprite based on current state and animation frame
@@ -332,7 +339,7 @@ void render_game(void) {
     // Draw environment
     //Background_Update(&game_character);
     //LCD_Draw_Sprite_Scaled(0, 0, 24, 24, (uint8_t*)Background, 10, 0);
-    //draw_blocks();
+    render_blocks();
     
     // Draw character at current position with animation
     Character_Draw(&game_character);
@@ -362,21 +369,4 @@ void update_character(Joystick_t* joy) {
     Character_Update(&game_character, joy, dash_pressed, jump_pressed);
 }
 
-// Check if character and object collide
-uint8_t collision(uint16_t x1, uint16_t y1, uint16_t r1, uint16_t x2, uint16_t y2, uint16_t r2) {
-  
-    int32_t dx = (int32_t)x2 - (int32_t)x1;
-  int32_t dy = (int32_t)y2 - (int32_t)y1;
-  int32_t dist_squared = (dx * dx) + (dy * dy);
-  int32_t radii_sum = r1 + r2;
-  int32_t radii_sum_squared = radii_sum * radii_sum;
-  
-  return (dist_squared <= radii_sum_squared) ? 1 : 0;
-}
 
-/*
-void draw_blocks(void) {
-    for (uint8_t i = 0; i < TARGET_COUNT; i++) {
-        LCD_Draw_Sprite_Scaled(Blocks[i].x - Blocks[i].radius, Blocks[i].y - Blocks[i].radius, 16, 16, (uint8_t*)grass_block, 1, 0);
-    }
-}*/

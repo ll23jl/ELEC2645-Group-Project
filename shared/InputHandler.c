@@ -70,7 +70,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
             btn3_raw_press = 1;
         }
     }
-    // Handle BT4 (joystick button)
+    // Handle BT4 
     if (GPIO_Pin == BTN4_Pin) {
         // Software debouncing (200ms)
         if ((current_time - last_btn4_interrupt) > 200) {
