@@ -75,6 +75,8 @@ MenuState Game1_Run(void) {
     LCD_Fill_Buffer(0);
     LCD_Refresh(&cfg0);
 
+    // Set initial room
+    change_room(room_1);
     
     // Play a brief startup sound
     buzzer_tone(&buzzer_cfg, 1000, 30);  // 1kHz at 30% volume
@@ -206,7 +208,7 @@ void Character_Update(Character_1* character, Joystick_t* joy, uint8_t dash_pres
     for (uint8_t i = 0; i < 15; i++)           // runs for size of the room - [15][15] blocks
     {   for (uint8_t j = 0; j < 15; j++)
         {
-            if (room_1[i][j] == 1) // if there is a block in the space
+            if (current_room.tiles[i][j] == 1) // if there is a block in the space
             {
                 block current_block;
                 current_block.x = j * 16;     // Calculate block's x centre position

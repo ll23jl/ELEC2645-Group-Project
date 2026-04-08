@@ -14,19 +14,20 @@ typedef struct {
     uint8_t height;                // Collision height
 }block;
 
-
+// Room structure
 typedef struct{
-    uint8_t block_count;
-    block* blocks;
-}current_room;
+    uint8_t tiles[15][15];
+}room;
 
 
 // room functions
 void render_blocks(void);
 uint8_t collision(uint16_t c_x, uint16_t c_y, uint16_t c_w, uint16_t c_h, uint16_t o_x, uint16_t o_y, uint16_t o_w, uint16_t o_h);
+void change_room(room new_room);
 
-// starting room
-extern const uint8_t room_1[15][15];
-
+// rooms
+extern room current_room; 
+extern const room room_1;
+extern const room room_2;
 
 #endif // ROOMS_H
