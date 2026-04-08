@@ -23,11 +23,18 @@ typedef struct{
 // room functions
 void render_blocks(void);
 uint8_t collision(uint16_t c_x, uint16_t c_y, uint16_t c_w, uint16_t c_h, uint16_t o_x, uint16_t o_y, uint16_t o_w, uint16_t o_h);
-void change_room(room new_room);
+void change_room(void);
 
-// rooms
-extern room current_room; 
+// map
+extern const room* map[3][3]; // 3x3 grid of rooms
+
+// current room variables
+extern const room* current_room;
+extern uint16_t current_room_index[2];
+
+// room layouts
 extern const room room_1;
 extern const room room_2;
+extern const room room_3;
 
 #endif // ROOMS_H

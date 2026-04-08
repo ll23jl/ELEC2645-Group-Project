@@ -76,7 +76,9 @@ MenuState Game1_Run(void) {
     LCD_Refresh(&cfg0);
 
     // Set initial room
-    change_room(room_1);
+    current_room = &room_1;
+    current_room_index[0] = 1;
+    current_room_index[1] = 1; // Start in centre room
     
     // Play a brief startup sound
     buzzer_tone(&buzzer_cfg, 1000, 30);  // 1kHz at 30% volume
@@ -208,7 +210,7 @@ void Character_Update(Character_1* character, Joystick_t* joy, uint8_t dash_pres
     for (uint8_t i = 0; i < 15; i++)           // runs for size of the room - [15][15] blocks
     {   for (uint8_t j = 0; j < 15; j++)
         {
-            if (current_room.tiles[i][j] == 1) // if there is a block in the space
+            if (current_room->tiles[i][j] == 1) // if there is a block in the space
             {
                 block current_block;
                 current_block.x = j * 16;     // Calculate block's x centre position
@@ -240,12 +242,34 @@ void Character_Update(Character_1* character, Joystick_t* joy, uint8_t dash_pres
         }
     }
 
-    // Keep on screen 
+    /* Keep on screen 
     if (new_x < 20) new_x = 20;
     if (new_x > 220) new_x = 220;
     if (new_y < 20) new_y = 20;
     if (new_y > 220) new_y = 220;
+    */
 
+    // detect room transitions (if character goes beyond screen edges)
+    if (new_x < 0) {  
+        current_room_index[1]--;
+        change_room();
+        new_x = 240; 
+    }
+    if (new_x > 240) { 
+        current_room_index[1]++; 
+        change_room();
+        new_x = 0; 
+    }
+    if (new_y < 0) {  
+        current_room_index[0]--; 
+        change_room();
+        new_y = 240; 
+    }
+    if (new_y > 240) { 
+        current_room_index[0]++; 
+        change_room();
+        new_y = 0; 
+    }
 
     // update old position ( for background drawing)
     character->prev_x = character->x;
@@ -339,8 +363,6 @@ void render_game(void) {
     LCD_Fill_Buffer(0);
 
     // Draw environment
-    //Background_Update(&game_character);
-    //LCD_Draw_Sprite_Scaled(0, 0, 24, 24, (uint8_t*)Background, 10, 0);
     render_blocks();
     
     // Draw character at current position with animation
