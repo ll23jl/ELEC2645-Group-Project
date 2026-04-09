@@ -1,17 +1,23 @@
 #ifndef SPRITES_H
 #define SPRITES_H
 
-// cat sprites
-extern const uint8_t CharacterIDLE[32][32];
-extern const uint8_t CharacterWALK1[32][32];
-extern const uint8_t CharacterWALK2[32][32];
-extern const uint8_t CharacterDASH[32][32];
-extern const uint8_t CharacterJUMP[32][32];
+// idle sprites
+extern const uint8_t cat_idle1[32][32];
+extern const uint8_t cat_idle2[32][32];
+extern const uint8_t cat_idle3[32][32];
+extern const uint8_t cat_idle4[32][32];
 
+// walking sprites
 extern const uint8_t cat_walk1[32][32];
 extern const uint8_t cat_walk2[32][32];
 extern const uint8_t cat_walk3[32][32];
 extern const uint8_t cat_walk4[32][32];
+
+// dashing sprites
+extern const uint8_t cat_run1[32][32];
+extern const uint8_t cat_run2[32][32];
+extern const uint8_t cat_run3[32][32];
+extern const uint8_t cat_run4[32][32];
 
 // mouse sprites
 extern const uint8_t mouse_sat[16][16];

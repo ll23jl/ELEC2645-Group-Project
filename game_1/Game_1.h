@@ -50,13 +50,12 @@ typedef struct {
     int16_t prev_x;                 // Previous X position
     int16_t prev_y;                 // Previous Y position
     CharacterState_1 state;         // Current state
-    uint8_t animation_frame;        // 0 or 1 (walk cycle)
+    uint8_t animation_frame;        // frame index for animation
     uint8_t frame_counter;          // Counter for animation timing
     uint8_t dash_counter;           // Frames remaining in dash
     uint8_t jump_counter;           // Frames remaining in jump
     uint8_t width;                  // Collision width
     uint8_t height;                 // Collision height
-    uint8_t frame;                  // Current frame for animation
 } Character_1;
 
 

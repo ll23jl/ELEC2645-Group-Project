@@ -24,6 +24,9 @@ extern Joystick_t joystick_data; // Joystick data structure
 // Frame rate for this game (in milliseconds)
 #define GAME1_FRAME_TIME_MS 30  // ~33 FPS
 
+// frame rate for character animation (in frames)
+#define ANIMATION_FRAME_RATE 3  // Change sprite every 3 frames
+
 // ===== UTILITY FUNCTIONS =====
 
 // ===== CHARACTER FSM VARIABLES =====
@@ -242,12 +245,6 @@ void Character_Update(Character_1* character, Joystick_t* joy, uint8_t dash_pres
         }
     }
 
-    /* Keep on screen 
-    if (new_x < 20) new_x = 20;
-    if (new_x > 220) new_x = 220;
-    if (new_y < 20) new_y = 20;
-    if (new_y > 220) new_y = 220;
-    */
 
     // detect room transitions (if character goes beyond screen edges)
     if (new_x < 0) {  
@@ -299,17 +296,6 @@ void Character_Update(Character_1* character, Joystick_t* joy, uint8_t dash_pres
         character->state = CHAR_IDLE;
     }
     
-    // ===== Update animation frame for walk cycle =====
-    if (character->state == CHAR_WALKING_L || character->state == CHAR_WALKING_R) {
-        character->frame_counter++;
-        if (character->frame_counter >= 10) {
-            character->frame_counter = 0;
-            character->animation_frame = (character->animation_frame + 1) % 2;
-        }
-    } else {
-        character->animation_frame = 0;
-        character->frame_counter = 0;
-    }
 }
 
 // Draw character sprite based on current state and animation frame
@@ -317,42 +303,77 @@ void Character_Draw(Character_1* character) {
     
     int16_t x_pos = character->x - 16;  // 32x32 sprite 
     int16_t y_pos = character->y - 16;
+
+    character->frame_counter++;
+    character->animation_frame = (character->frame_counter / ANIMATION_FRAME_RATE) % 4; // 4 frames per animation cycle
     
     switch (character->state) {
         case CHAR_IDLE:
-            LCD_Draw_Sprite(x_pos, y_pos, 32, 32, (uint8_t*)CharacterIDLE, 1);
+            if (character->animation_frame == 0) {
+                LCD_Draw_Sprite(x_pos, y_pos, 32, 32, (uint8_t*)cat_idle1, 0);
+            } else if (character->animation_frame == 1) {
+                LCD_Draw_Sprite(x_pos, y_pos, 32, 32, (uint8_t*)cat_idle2, 0);
+            } else if (character->animation_frame == 2) {
+                LCD_Draw_Sprite(x_pos, y_pos, 32, 32, (uint8_t*)cat_idle3, 0);
+            } else {
+                LCD_Draw_Sprite(x_pos, y_pos, 32, 32, (uint8_t*)cat_idle4, 0);
+            }
             break;
         
         case CHAR_WALKING_L:
             if (character->animation_frame == 0) {
-                LCD_Draw_Sprite(x_pos, y_pos, 32, 32, (uint8_t*)CharacterWALK1, 0);
+                LCD_Draw_Sprite(x_pos, y_pos, 32, 32, (uint8_t*)cat_walk1, 0);
+            } else if (character->animation_frame == 1) {
+                LCD_Draw_Sprite(x_pos, y_pos, 32, 32, (uint8_t*)cat_walk2, 0);
+            } else if (character->animation_frame == 2) {
+                LCD_Draw_Sprite(x_pos, y_pos, 32, 32, (uint8_t*)cat_walk3, 0);
             } else {
-                LCD_Draw_Sprite(x_pos, y_pos, 32, 32, (uint8_t*)CharacterWALK2, 0);
+                LCD_Draw_Sprite(x_pos, y_pos, 32, 32, (uint8_t*)cat_walk4, 0);
             }
             break;
 
         case CHAR_WALKING_R:
             if (character->animation_frame == 0) {
-                LCD_Draw_Sprite(x_pos, y_pos, 32, 32, (uint8_t*)CharacterWALK1, 1);
+                LCD_Draw_Sprite(x_pos, y_pos, 32, 32, (uint8_t*)cat_walk1, 1);
+            } else if (character->animation_frame == 1) {
+                LCD_Draw_Sprite(x_pos, y_pos, 32, 32, (uint8_t*)cat_walk2, 1);
+            } else if (character->animation_frame == 2) {
+                LCD_Draw_Sprite(x_pos, y_pos, 32, 32, (uint8_t*)cat_walk3, 1);
             } else {
-                LCD_Draw_Sprite(x_pos, y_pos, 32, 32, (uint8_t*)CharacterWALK2, 1);
+                LCD_Draw_Sprite(x_pos, y_pos, 32, 32, (uint8_t*)cat_walk4, 1);
             }
             break;
         
-        case CHAR_DASHING_R:
-            LCD_Draw_Sprite(x_pos, y_pos, 32, 32, (uint8_t*)CharacterDASH, 1);
+        case CHAR_DASHING_L:
+            if (character->animation_frame == 0) {
+                LCD_Draw_Sprite(x_pos, y_pos, 32, 32, (uint8_t*)cat_run1, 0);
+            } else if (character->animation_frame == 1) {
+                LCD_Draw_Sprite(x_pos, y_pos, 32, 32, (uint8_t*)cat_run2, 0);
+            } else if (character->animation_frame == 2) {
+                LCD_Draw_Sprite(x_pos, y_pos, 32, 32, (uint8_t*)cat_run3, 0);
+            } else {
+                LCD_Draw_Sprite(x_pos, y_pos, 32, 32, (uint8_t*)cat_run4, 0);
+            }
             break;
 
-        case CHAR_DASHING_L:
-            LCD_Draw_Sprite(x_pos, y_pos, 32, 32, (uint8_t*)CharacterDASH, 0);
+        case CHAR_DASHING_R:
+            if (character->animation_frame == 0) {
+                LCD_Draw_Sprite(x_pos, y_pos, 32, 32, (uint8_t*)cat_run1, 1);
+            } else if (character->animation_frame == 1) {
+                LCD_Draw_Sprite(x_pos, y_pos, 32, 32, (uint8_t*)cat_run2, 1);
+            } else if (character->animation_frame == 2) {
+                LCD_Draw_Sprite(x_pos, y_pos, 32, 32, (uint8_t*)cat_run3, 1);
+            } else {
+                LCD_Draw_Sprite(x_pos, y_pos, 32, 32, (uint8_t*)cat_run4, 1);
+            }
             break;
 
         case CHAR_JUMPING_R:
-            LCD_Draw_Sprite(x_pos, y_pos, 32, 32, (uint8_t*)CharacterJUMP, 1);
+            LCD_Draw_Sprite(x_pos, y_pos, 32, 32, (uint8_t*)cat_run4, 1);
             break;
 
         case CHAR_JUMPING_L:
-            LCD_Draw_Sprite(x_pos, y_pos, 32, 32, (uint8_t*)CharacterJUMP, 0);
+            LCD_Draw_Sprite(x_pos, y_pos, 32, 32, (uint8_t*)cat_run4, 0);
             break;
     }
 }
