@@ -166,8 +166,8 @@ void Character_Init(Character_1* character) {
     character->frame_counter = 0;
     character->dash_counter = 0;
     character->jump_counter = 0;
-    character->width = 32;
-    character->height = 32;
+    character->width = 25;              // - adjusted for better collision feel (smaller than actual 32x32 sprite)
+    character->height = 25;             // - adjusted for better collision feel (smaller than actual 32x32 sprite)
 }
 
 // Update character position and state based on joystick input and button presses
@@ -213,13 +213,13 @@ void Character_Update(Character_1* character, Joystick_t* joy, uint8_t dash_pres
     for (uint8_t i = 0; i < 15; i++)           // runs for size of the room - [15][15] blocks
     {   for (uint8_t j = 0; j < 15; j++)
         {
-            if (current_room->tiles[i][j] == 1) // if there is a block in the space
+            if (current_room->tiles[i][j] > 0) // if the tile is not empty, check for collision with player
             {
                 block current_block;
-                current_block.x = j * 16;     // Calculate block's x centre position
-                current_block.y = i * 16;     // Calculate block's y centre position
-                current_block.width = 10;       // Block width
-                current_block.height = 10;      // Block height
+                current_block.x = j * 16 + 8;       // Calculate block's x centre position ( 16 x 16 pixel sprite)
+                current_block.y = i * 16 + 8;       // Calculate block's y centre position
+                current_block.width = 16;       // Block width
+                current_block.height = 16;      // Block height
 
                 // handle x direction collisions
                 if (collision(new_x, character->y,
@@ -390,12 +390,12 @@ void render_game(void) {
     Character_Draw(&game_character);
     
     // Draw debug info
-    LCD_printString("St:", 10, 5, 1, 2);
-    LCD_printString((char*)get_char_state_name(game_character.state), 44, 5, 1, 2);
+    LCD_printString("St:", 10, 5, 1, 1);
+    LCD_printString((char*)get_char_state_name(game_character.state), 44, 5, 1, 1);
     
     char pos_str[24];
     sprintf(pos_str, "X:%d Y:%d", game_character.x, game_character.y);
-    LCD_printString(pos_str, 120, 5, 1, 2);
+    LCD_printString(pos_str, 120, 5, 1, 1);
     
     // Refresh LCD to display this frame
     LCD_Refresh(&cfg0);
