@@ -477,8 +477,16 @@ void NPC_Update(Character* npc, uint8_t x) {
                               current_block.width, current_block.height)) {
                     
                     // Collision detected - cancel movement
-                    new_x = npc->x;
-                    new_y = npc->y - 4;     // small jump to get over obstacle
+                    // interacting from left
+                    if (move_x > 0) {
+                        new_x = current_block.x - (current_block.width + npc->width) / 2 - 1; // Place npc just to the right of block
+                        new_y = npc->y - 4;     // small jump to get over obstacle
+                    }
+                    // interacting from right
+                    else if (move_x < 0) {
+                        new_x = current_block.x + (current_block.width + npc->width) / 2 + 1; // Place npc just to the left of block
+                        new_y = npc->y - 4;     // small jump to get over obstacle
+                    }
                     break;
                 }
                 // handle y direction collisions
@@ -488,7 +496,14 @@ void NPC_Update(Character* npc, uint8_t x) {
                               current_block.width, current_block.height)) {
                     
                     // Collision detected - cancel movement
-                    new_y = npc->y;
+                    // falling down onto block
+                    if (move_y >= 0) {
+                        new_y = current_block.y - (current_block.height + npc->height) / 2 - 1; // Place npc on top of block
+                    }
+                    // hitting head on block
+                    else if (move_y < 0) {
+                        new_y = current_block.y + (current_block.height + npc->height) / 2 + 1; // Place npc just below block
+                    }
                     break;
                 }
 
@@ -506,6 +521,8 @@ void NPC_Update(Character* npc, uint8_t x) {
             }
         }
     }
+
+
 
 
     // keep within the room
