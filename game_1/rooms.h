@@ -25,6 +25,9 @@ void render_blocks(void);
 uint8_t collision(uint16_t c_x, uint16_t c_y, uint16_t c_w, uint16_t c_h, uint16_t o_x, uint16_t o_y, uint16_t o_w, uint16_t o_h);
 void change_room(void);
 
+// npc
+extern int8_t is_npc; // flag to indicate if NPC is present in the current room
+
 // map
 extern const room* map[3][3]; // 3x3 grid of rooms
 

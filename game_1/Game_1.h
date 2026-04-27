@@ -31,17 +31,22 @@
 #define GRAVITY -10
 #define jump_height -4
 
+// NPC constants
+#define NPC_SPEED 3                 // Pixels per frame
+
 // Character states
 typedef enum {
-    CHAR_IDLE = 0,          // Not moving
-    CHAR_WALKING_L,         // Moving left
-    CHAR_WALKING_R,         // Moving right
-    CHAR_DASHING_L,         // Fast movement left
-    CHAR_DASHING_R,         // Fast movement right
-    CHAR_JUMPING_L,         // Jumping left
-    CHAR_JUMPING_R          // Jumping right
 
-} CharacterState_1;
+    // Player states
+    CHAR_IDLE,              // Not moving
+    CHAR_WALKING,           // Moving
+    CHAR_DASHING,           // Fast movement
+    CHAR_JUMPING,           // Jumping
+
+    // NPC states
+    NPC_IDLE,               // Not moving
+    NPC_WALKING,            // Moving
+} CharacterState;
 
 // Character structure
 typedef struct {
@@ -49,26 +54,40 @@ typedef struct {
     int16_t y;                      // Y position
     int16_t prev_x;                 // Previous X position
     int16_t prev_y;                 // Previous Y position
-    CharacterState_1 state;         // Current state
+    int8_t direction;               // -1 for left, 1 for right
+    CharacterState state;           // Current state
     uint8_t animation_frame;        // frame index for animation
     uint8_t frame_counter;          // Counter for animation timing
     uint8_t dash_counter;           // Frames remaining in dash
     uint8_t jump_counter;           // Frames remaining in jump
     uint8_t width;                  // Collision width
     uint8_t height;                 // Collision height
-} Character_1;
+    uint16_t health;                // Health points 
+    uint16_t food;                  // Hunger level 
+} Character;
 
-
+// Global character instances
+extern Character game_character;  // Player character
+extern Character npc_character;   // NPC character
 
 
 // Character function prototypes
-void Character_Init(Character_1* character);
 
-void Character_Update(Character_1* character, Joystick_t* joy, uint8_t dash_pressed, uint8_t jump_pressed);
+void Character_Init(Character* character);
 
-void Character_Draw(Character_1* character);
+void Character_Update(Character* character, Joystick_t* joy, uint8_t dash_pressed, uint8_t jump_pressed);
+
+void Character_Draw(Character* character);
 
 void update_character(Joystick_t* joy);
+
+// NPC function prototypes
+
+void NPC_init(Character* npc);
+void NPC_Update(Character* npc, uint8_t x);
+void update_npc(void);
+
+// Game function prototypes
 
 void render_game(void);
 

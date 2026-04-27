@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include "LCD.h"
 #include "sprites.h"
 #include "game_1.h"
@@ -9,11 +10,17 @@
 
 const room* current_room; // global variable to hold the current room data
 uint16_t current_room_index[2] = {0, 0}; // index to track which room we are in
+int8_t is_npc = 0; // flag to indicate if NPC is present in the current room
 
 // change room
 void change_room(void) {
     //assign new room to current room
     current_room = map[current_room_index[0]][current_room_index[1]];
+    is_npc = rand() % 2; // randomly decide if NPC is present in this room (50% chance)
+    if (is_npc) {
+        NPC_init(&npc_character); // initialize NPC if present
+    }
+
 }
 
 // place blocks in the environment based on room data
@@ -27,15 +34,23 @@ void render_blocks(void) {
     }
 }
 
-// check collisions between a character and an object in the environment
-uint8_t collision(uint16_t c_x, uint16_t c_y, uint16_t c_w, uint16_t c_h, uint16_t o_x, uint16_t o_y, uint16_t o_w, uint16_t o_h) {
+// check collisions between a character and an object in the environment using AABB collision detection
+uint8_t collision(uint16_t c_x, uint16_t c_y, uint16_t c_w, uint16_t c_h,
+                  uint16_t o_x, uint16_t o_y, uint16_t o_w, uint16_t o_h) {
 
-    uint16_t dx = abs(c_x - o_x);
-    uint16_t dy = abs(c_y - o_y);
+    int dx1 = (int)c_x - (int)o_x;
+    int dx2 = (int)o_x - (int)c_x;
 
-    return (dx <= (c_w/2 + o_w/2)) &&
-           (dy <= (c_h/2 + o_h/2));
+    int dy1 = (int)c_y - (int)o_y;
+    int dy2 = (int)o_y - (int)c_y;
+
+    int sum_w = (c_w + o_w) / 2;
+    int sum_h = (c_h + o_h) / 2;
+
+    return (dx1 <= sum_w && dx2 <= sum_w) &&
+           (dy1 <= sum_h && dy2 <= sum_h);
 }
+
 
 // map
 const room* map[3][3] = {
@@ -78,10 +93,10 @@ const room room_2 = {
         {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 
         {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 
         {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 
-        {1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0}, 
-        {1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0}, 
-        {1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0}, 
-        {1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0}, 
+        {1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 
+        {1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0}, 
+        {1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0}, 
+        {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0}, 
         {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
     }
 };
