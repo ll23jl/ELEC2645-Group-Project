@@ -595,17 +595,17 @@ void render_game(void) {
     }
 
     // Display character stats info
-    LCD_printString("Health:", 10, 5, 1, 1);
+    LCD_printString("Health:", 10, 5, 8, 1);
     char health_str[6];
     // display health as percentage of max health (1000) to keep it within 3 digits for display
     sprintf(health_str, "%d", (game_character.health * 100) / 1000);
-    LCD_printString(health_str, 60, 5, 1, 2);
+    LCD_printString(health_str, 60, 5, 8, 2);
     
-    LCD_printString("Food:", 170, 5, 1, 1);
+    LCD_printString("Food:", 170, 5, 8, 1);
     char food_str[6];
     // display food as percentage of max food (1000) to keep it within 3 digits for display
     sprintf(food_str, "%d", (game_character.food * 100) / 1000);
-    LCD_printString(food_str, 210, 5, 1, 2);
+    LCD_printString(food_str, 210, 5, 8, 2);
     
     // Refresh LCD to display this frame
     LCD_Refresh(&cfg0);

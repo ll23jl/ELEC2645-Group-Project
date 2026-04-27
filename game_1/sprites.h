@@ -26,5 +26,14 @@ extern const uint8_t mouse_walk2[16][16];
 
 // environment sprites
 extern const uint8_t grass_block[16][16];
+extern const uint8_t wall_full[16][16];
+extern const uint8_t wall_top_left[16][16];
+extern const uint8_t wall_top_right[16][16];
+extern const uint8_t wall_bottom_left[16][16];
+extern const uint8_t wall_bottom_right[16][16];
+extern const uint8_t wall_left[16][16];
+extern const uint8_t wall_right[16][16];
+extern const uint8_t wall_top[16][16];
+extern const uint8_t wall_bottom[16][16];
 
 #endif // SPRITES_H
