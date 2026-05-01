@@ -39,5 +39,11 @@ extern uint16_t current_room_index[2];
 extern const room room_1;
 extern const room room_2;
 extern const room room_3;
+extern const room room_4;
+extern const room room_5;
+extern const room room_6;
+extern const room room_7;
+extern const room room_8;
+extern const room room_9;
 
 #endif // ROOMS_H

@@ -42,6 +42,7 @@ typedef enum {
     CHAR_WALKING,           // Moving
     CHAR_DASHING,           // Fast movement
     CHAR_JUMPING,           // Jumping
+    CHAR_FALLING,           // Falling (stops jumping mid air)
 
     // NPC states
     NPC_IDLE,               // Not moving

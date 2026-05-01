@@ -14,6 +14,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/_intsup.h>
 
 extern ST7789V2_cfg_t cfg0;
 extern PWM_cfg_t pwm_cfg;      // LED PWM control
@@ -28,7 +29,7 @@ extern Joystick_t joystick_data; // Joystick data structure
 // frame rate for character animation (in frames)
 #define ANIMATION_FRAME_RATE 3  // Change sprite every 3 frames
 
-// ===== UTILITY FUNCTIONS =====
+
 
 // ===== CHARACTER FSM VARIABLES =====
 
@@ -39,8 +40,11 @@ Character game_character;
 Character npc_character;
 
 // NPC movement counter
-int8_t npc_move_counter = 0;
-int8_t npc_direction = 0; // -1 for left, 0 for idle, 1 for right
+int8_t npc_move_counter;
+int8_t npc_direction; // -1 for left, 0 for idle, 1 for right
+
+// Other variables
+uint8_t day_counter;
 
 // Dash button state
 volatile uint8_t dash_button_pressed = 0;
@@ -75,9 +79,12 @@ MenuState Game1_Run(void) {
     LCD_Refresh(&cfg0);
 
     // Set initial room
-    current_room = &room_1;
     current_room_index[0] = 1;
-    current_room_index[1] = 1; // Start in centre room
+    current_room_index[1] = 1;      // Start in centre room
+    change_room(); // Load initial room data and NPC state
+
+    // Initial game states
+    day_counter = 1; // Start at day 1
     
     // Play a brief startup sound
     buzzer_tone(&buzzer_cfg, 1000, 30);  // 1kHz at 30% volume
@@ -168,8 +175,8 @@ void Character_Init(Character* character) {
     character->frame_counter = 0;
     character->dash_counter = 0;
     character->jump_counter = 0;
-    character->width = 20;              // - adjusted for better collision feel (smaller than actual 32x32 sprite)
-    character->height = 20;             // - adjusted for better collision feel (smaller than actual 32x32 sprite)
+    character->width = 16;              // - adjusted for better collision feel (smaller than actual 32x32 sprite)
+    character->height = 16;             // - adjusted for better collision feel (smaller than actual 32x32 sprite)
     character->health = 500;            // Start with half health
     character->food = 500;              // Start with half food
 }
@@ -188,7 +195,7 @@ void Character_Update(Character* character, Joystick_t* joy, uint8_t dash_presse
     }
     
     // Handle jump button
-    if (jump_pressed && character->jump_counter == 0) {
+    if (jump_pressed && character->jump_counter == 0 && character->state != CHAR_JUMPING && character->state != CHAR_FALLING) {
         character->jump_counter = CHAR_JUMP_DURATION;
     }
 
@@ -276,10 +283,11 @@ void Character_Update(Character* character, Joystick_t* joy, uint8_t dash_presse
         change_room();
         new_x = 0;
     }
-    if (new_y < 0) {  
+    if (new_y < 10) {  
         current_room_index[0]--; 
         change_room();
-        new_y = 240; 
+        new_y = 230;
+        character->jump_counter = CHAR_JUMP_DURATION; // Force jump when moving up to next room to prevent immediate fall back down 
     }
     if (new_y > 240) { 
         current_room_index[0]++; 
@@ -305,12 +313,16 @@ void Character_Update(Character* character, Joystick_t* joy, uint8_t dash_presse
     } else if (character->dash_counter > 0 && move_x == -1) {
         character->state = CHAR_DASHING;
         character->direction = -1;
-    } else if (character->jump_counter > 0 && move_x == 1) {
+    } else if (character->jump_counter > 0) {
         character->state = CHAR_JUMPING;
-        character->direction = 1;
-    } else if (character->jump_counter > 0 && move_x == -1) {
-        character->state = CHAR_JUMPING;
-        character->direction = -1;
+        if (move_x == 1) {character->direction = 1;}
+        else if (move_x == -1) {character->direction = -1;}
+        else { /* do nothing - direction stays the same as prev */ }
+    } else if (character->y > character->prev_y) {
+        character->state = CHAR_FALLING;
+        if (move_x == 1) {character->direction = 1;}
+        else if (move_x == -1) {character->direction = -1;}
+        else { /* do nothing - direction stays the same as prev */ }
     } else if (is_moving && move_x == 1) {
         character->state = CHAR_WALKING;
         character->direction = 1;
@@ -335,9 +347,15 @@ void Character_Draw(Character* character) {
         character->frame_counter++;
         character->animation_frame = (character->frame_counter / ANIMATION_FRAME_RATE) % 2; // 2 frames per animation cycle
     } else {
-        // Player character uses 32x32 sprite   
-        x_pos = character->x - 16;
-        y_pos = character->y - 16;
+        // Player character uses 32x32 sprite
+        if (character->direction == 1) {
+            // facing right, adjust position to left for better collision feel
+            x_pos = character->x - 22;  
+        } else {
+            // facing left, adjust position to right for better collision feel
+            x_pos = character->x - 10;  
+        }
+        y_pos = character->y - 19;
         character->frame_counter++;
         character->animation_frame = (character->frame_counter / ANIMATION_FRAME_RATE) % 4; // 4 frames per animation cycle
     }
@@ -383,6 +401,10 @@ void Character_Draw(Character* character) {
         case CHAR_JUMPING:
             LCD_Draw_Sprite(x_pos, y_pos, 32, 32, (uint8_t*)cat_run4, character->direction == 1 ? 1 : 0);
             break;
+
+        case CHAR_FALLING:
+            LCD_Draw_Sprite(x_pos, y_pos, 32, 32, (uint8_t*)cat_run4, character->direction == 1 ? 1 : 0);
+            break;    
 
 
         // NPC states    
@@ -433,8 +455,20 @@ void update_character(Joystick_t* joy) {
 
 // Initialize NPC at screen center with default state
 void NPC_init(Character* npc) {
-    npc->x = rand() % 240; // Random x position within screen bounds
-    npc->y = rand() % 240; // Random y position within screen bounds
+
+    for (uint8_t attempst = 0; attempst < 100; attempst++) { // try 100 times to find an empty tile to spawn npc
+        uint8_t i, j;
+        i = rand() % 15 + 2; // random row other than outer wall
+        j = rand() % 15 + 2; // random column other than outer wall
+
+        if (current_room->tiles[i][j] == 0 && current_room->tiles[i+1][j] == 1) // find an empty tile to spawn npc with a solid block underneath
+        {
+            npc->x = j * 16 + 8;       // Calculate npc's x centre position ( 16 x 16 pixel sprite)
+            npc->y = i * 16;       // Calculate npc's y centre position
+            break;
+        }
+    }
+
     npc->prev_x = npc->x;
     npc->prev_y = npc->y;
     npc->direction = 1; // Start facing right
@@ -444,7 +478,10 @@ void NPC_init(Character* npc) {
     npc->dash_counter = 0;
     npc->jump_counter = 0;
     npc->width = 16;              
-    npc->height = 16;             
+    npc->height = 16;
+    
+    npc_move_counter = 10; // start in idle state for 10 frames before moving
+    npc_direction = 0; // start idle
 }
 
 // Update NPC position and state based on random movement logic
@@ -507,7 +544,11 @@ void NPC_Update(Character* npc, uint8_t x) {
                     break;
                 }
 
-                // check for collision with player character
+        
+                }
+            }
+        }
+        // check for collision with player character
                 if (collision(new_x, new_y,
                               npc->width, npc->height, 
                               game_character.x, game_character.y,
@@ -516,20 +557,16 @@ void NPC_Update(Character* npc, uint8_t x) {
                     // Collision with player = remove npc and restore some player food
                     is_npc = 0; 
                     game_character.food = (game_character.food + 200 > 1000) ? 1000 : game_character.food + 200; // restore some food
-                    break;
-                }
-            }
-        }
     }
 
 
 
 
-    // keep within the room
-    if (new_x < 5) {new_x = 5;}
-    if (new_x > 230) { new_x = 230;} 
-    if (new_y < 0) {new_y = 0;}
-    if (new_y > 230) {new_y = 230;}
+    // despawn if npc goes beyond screen edges (instead of transitioning to next room like player)
+    if (new_x < 0){is_npc = 0;}
+    if (new_x > 240) { is_npc = 0;} 
+    if (new_y < 10) {is_npc = 0;}
+    if (new_y > 240) {is_npc = 0;}
 
     // update old position
     npc->prev_x = npc->x;
@@ -599,9 +636,15 @@ void render_game(void) {
     char health_str[6];
     // display health as percentage of max health (1000) to keep it within 3 digits for display
     sprintf(health_str, "%d", (game_character.health * 100) / 1000);
-    LCD_printString(health_str, 60, 5, 8, 2);
+    LCD_printString(health_str, 55, 5, 8, 2);
+
+    LCD_printString("Day:", 105, 5, 8, 1);
+    // display day counter
+    char day_str[6];
+    sprintf(day_str, "%d", (day_counter));
+    LCD_printString(day_str, 130, 5, 8, 2);
     
-    LCD_printString("Food:", 170, 5, 8, 1);
+    LCD_printString("Food:", 175, 5, 8, 1);
     char food_str[6];
     // display food as percentage of max food (1000) to keep it within 3 digits for display
     sprintf(food_str, "%d", (game_character.food * 100) / 1000);
