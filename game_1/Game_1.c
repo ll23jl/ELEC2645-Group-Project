@@ -71,6 +71,8 @@ MenuState Game1_Run(void) {
     // Initialize game state
     LCD_Set_Palette(PALETTE_CUSTOM); 
 
+    instruction(); // Show instructions at the start of the game
+
     // Initialize Character
     Character_Init(&game_character);
     
@@ -156,6 +158,13 @@ MenuState Game1_Run(void) {
         if (frame_time < GAME1_FRAME_TIME_MS) {
             HAL_Delay(GAME1_FRAME_TIME_MS - frame_time);
         }
+
+        if(game_character.health == 0) {
+            game_over();
+            // go back to menu after game over screen
+            exit_state = MENU_STATE_HOME;
+            break;  // Exit game loop
+        }
     }
     
     return exit_state;  // Tell main where to go next
@@ -177,7 +186,7 @@ void Character_Init(Character* character) {
     character->jump_counter = 0;
     character->width = 16;              // - adjusted for better collision feel (smaller than actual 32x32 sprite)
     character->height = 16;             // - adjusted for better collision feel (smaller than actual 32x32 sprite)
-    character->health = 500;            // Start with half health
+    character->health = 1000;            // Start with full health
     character->food = 500;              // Start with half food
 }
 
@@ -364,59 +373,59 @@ void Character_Draw(Character* character) {
     switch (character->state) {
         case CHAR_IDLE:
             if (character->animation_frame == 0) {
-                LCD_Draw_Sprite(x_pos, y_pos, 32, 32, (uint8_t*)cat_idle1, character->direction == 1 ? 1 : 0);
+                LCD_Draw_Sprite_directional(x_pos, y_pos, 32, 32, (uint8_t*)cat_idle1, character->direction == 1 ? 1 : 0);
             } else if (character->animation_frame == 1) {
-                LCD_Draw_Sprite(x_pos, y_pos, 32, 32, (uint8_t*)cat_idle2, character->direction == 1 ? 1 : 0);
+                LCD_Draw_Sprite_directional(x_pos, y_pos, 32, 32, (uint8_t*)cat_idle2, character->direction == 1 ? 1 : 0);
             } else if (character->animation_frame == 2) {
-                LCD_Draw_Sprite(x_pos, y_pos, 32, 32, (uint8_t*)cat_idle3, character->direction == 1 ? 1 : 0);
+                LCD_Draw_Sprite_directional(x_pos, y_pos, 32, 32, (uint8_t*)cat_idle3, character->direction == 1 ? 1 : 0);
             } else {
-                LCD_Draw_Sprite(x_pos, y_pos, 32, 32, (uint8_t*)cat_idle4, character->direction == 1 ? 1 : 0);
+                LCD_Draw_Sprite_directional(x_pos, y_pos, 32, 32, (uint8_t*)cat_idle4, character->direction == 1 ? 1 : 0);
             }
             break;
         
         case CHAR_WALKING:
             if (character->animation_frame == 0) {
-                LCD_Draw_Sprite(x_pos, y_pos, 32, 32, (uint8_t*)cat_walk1, character->direction == 1 ? 1 : 0);
+                LCD_Draw_Sprite_directional(x_pos, y_pos, 32, 32, (uint8_t*)cat_walk1, character->direction == 1 ? 1 : 0);
             } else if (character->animation_frame == 1) {
-                LCD_Draw_Sprite(x_pos, y_pos, 32, 32, (uint8_t*)cat_walk2, character->direction == 1 ? 1 : 0);
+                LCD_Draw_Sprite_directional(x_pos, y_pos, 32, 32, (uint8_t*)cat_walk2, character->direction == 1 ? 1 : 0);
             } else if (character->animation_frame == 2) {
-                LCD_Draw_Sprite(x_pos, y_pos, 32, 32, (uint8_t*)cat_walk3, character->direction == 1 ? 1 : 0);
+                LCD_Draw_Sprite_directional(x_pos, y_pos, 32, 32, (uint8_t*)cat_walk3, character->direction == 1 ? 1 : 0);
             } else {
-                LCD_Draw_Sprite(x_pos, y_pos, 32, 32, (uint8_t*)cat_walk4, character->direction == 1 ? 1 : 0);
+                LCD_Draw_Sprite_directional(x_pos, y_pos, 32, 32, (uint8_t*)cat_walk4, character->direction == 1 ? 1 : 0);
             }
             break;
         
         case CHAR_DASHING:
             if (character->animation_frame == 0) {
-                LCD_Draw_Sprite(x_pos, y_pos, 32, 32, (uint8_t*)cat_run1, character->direction == 1 ? 1 : 0);
+                LCD_Draw_Sprite_directional(x_pos, y_pos, 32, 32, (uint8_t*)cat_run1, character->direction == 1 ? 1 : 0);
             } else if (character->animation_frame == 1) {
-                LCD_Draw_Sprite(x_pos, y_pos, 32, 32, (uint8_t*)cat_run2, character->direction == 1 ? 1 : 0);
+                LCD_Draw_Sprite_directional(x_pos, y_pos, 32, 32, (uint8_t*)cat_run2, character->direction == 1 ? 1 : 0);
             } else if (character->animation_frame == 2) {
-                LCD_Draw_Sprite(x_pos, y_pos, 32, 32, (uint8_t*)cat_run3, character->direction == 1 ? 1 : 0);
+                LCD_Draw_Sprite_directional(x_pos, y_pos, 32, 32, (uint8_t*)cat_run3, character->direction == 1 ? 1 : 0);
             } else {
-                LCD_Draw_Sprite(x_pos, y_pos, 32, 32, (uint8_t*)cat_run4, character->direction == 1 ? 1 : 0);
+                LCD_Draw_Sprite_directional(x_pos, y_pos, 32, 32, (uint8_t*)cat_run4, character->direction == 1 ? 1 : 0);
             }
             break;
 
         case CHAR_JUMPING:
-            LCD_Draw_Sprite(x_pos, y_pos, 32, 32, (uint8_t*)cat_run4, character->direction == 1 ? 1 : 0);
+            LCD_Draw_Sprite_directional(x_pos, y_pos, 32, 32, (uint8_t*)cat_run4, character->direction == 1 ? 1 : 0);
             break;
 
         case CHAR_FALLING:
-            LCD_Draw_Sprite(x_pos, y_pos, 32, 32, (uint8_t*)cat_run4, character->direction == 1 ? 1 : 0);
+            LCD_Draw_Sprite_directional(x_pos, y_pos, 32, 32, (uint8_t*)cat_run4, character->direction == 1 ? 1 : 0);
             break;    
 
 
         // NPC states    
         case NPC_IDLE:
-            LCD_Draw_Sprite(x_pos, y_pos, 16, 16, (uint8_t*)mouse_sat, npc_direction == 1 ? 1 : 0);
+            LCD_Draw_Sprite_directional(x_pos, y_pos, 16, 16, (uint8_t*)mouse_sat, npc_direction == 1 ? 1 : 0);
             break;
         case NPC_WALKING:
             if (character->animation_frame == 0) {
-                LCD_Draw_Sprite(x_pos, y_pos, 16, 16, (uint8_t*)mouse_walk1, npc_direction == 1 ? 1 : 0);
+                LCD_Draw_Sprite_directional(x_pos, y_pos, 16, 16, (uint8_t*)mouse_walk1, npc_direction == 1 ? 1 : 0);
             } 
             else {
-                LCD_Draw_Sprite(x_pos, y_pos, 16, 16, (uint8_t*)mouse_walk2, npc_direction == 1 ? 1 : 0);
+                LCD_Draw_Sprite_directional(x_pos, y_pos, 16, 16, (uint8_t*)mouse_walk2, npc_direction == 1 ? 1 : 0);
             }
             break;
     }
@@ -447,21 +456,41 @@ void update_character(Joystick_t* joy) {
 
     // Update character FSM with current input
     Character_Update(&game_character, joy, dash_pressed, jump_pressed);
+
+    // Check for day progression
+    // check if player collides with sleep point
+    if (current_room_index[0] == sleep_point.room_index[0] && current_room_index[1] == sleep_point.room_index[1]) {
+        if (collision(game_character.x, game_character.y,
+                      game_character.width, game_character.height, 
+                      sleep_point.x+16, sleep_point.y+16,
+                      sleep_point.width, sleep_point.height)) {
+            if (game_character.food > 700) {            
+                if (game_character.health < 1000) {
+                    // Sleep to restore health
+                    game_character.health = 1000; // Fully restore health
+                }
+                game_character.food = 500; // Consume some food to sleep
+                day_counter++;
+                new_day();
+                change_room(); // reload room to reset NPC and blocks
+            }
+        }
+    }
 }
 
 
 
 // ===== NPC CHARACTER FUNCTIONS =====
 
-// Initialize NPC at screen center with default state
+// Initialize NPC in free tile with default state
 void NPC_init(Character* npc) {
 
-    for (uint8_t attempst = 0; attempst < 100; attempst++) { // try 100 times to find an empty tile to spawn npc
+    for (uint8_t attempst = 0; attempst < 300; attempst++) { // try 100 times to find an empty tile to spawn npc
         uint8_t i, j;
-        i = rand() % 15 + 2; // random row other than outer wall
-        j = rand() % 15 + 2; // random column other than outer wall
+        i = rand() % 12 + 2; // random row other than outer wall
+        j = rand() % 12 + 2; // random column other than outer wall
 
-        if (current_room->tiles[i][j] == 0 && current_room->tiles[i+1][j] == 1) // find an empty tile to spawn npc with a solid block underneath
+        if (current_room->tiles[i][j] == 0 )//&& current_room->tiles[i+1][j] >0 ) // find an empty tile to spawn npc with a solid block underneath
         {
             npc->x = j * 16 + 8;       // Calculate npc's x centre position ( 16 x 16 pixel sprite)
             npc->y = i * 16;       // Calculate npc's y centre position
@@ -613,7 +642,7 @@ void update_npc() {
     NPC_Update(&npc_character, npc_direction);
 }
 
-// ===== RENDERING FUNCTION =====
+// ===== GAME FUNCTIONS =====
 
 // Render the game and character state to the LCD
 void render_game(void) {
@@ -621,7 +650,7 @@ void render_game(void) {
     LCD_Fill_Buffer(0);
 
     // Draw environment
-    render_blocks();
+    render_blocks(&sleep_point);
     
     // Draw character at current position with animation
     Character_Draw(&game_character);
@@ -652,4 +681,46 @@ void render_game(void) {
     
     // Refresh LCD to display this frame
     LCD_Refresh(&cfg0);
+}
+
+void new_day(void){
+    // Clear screen buffer
+    LCD_Fill_Buffer(0);
+    LCD_printString("Day", 65, 110, 8, 4);
+    char day_str[6];
+    sprintf(day_str, "%d", (day_counter));
+    LCD_printString(day_str, 145, 110, 8, 4);
+    // Refresh LCD to display this frame
+    LCD_Refresh(&cfg0);
+    HAL_Delay(1500);
+}
+
+void instruction(void) {
+    // Clear screen buffer
+    LCD_Fill_Buffer(0);
+    LCD_printString("Instructions:", 45, 20, 8, 2);
+    LCD_printString("Use joystick to move", 60, 50, 8, 1);
+    LCD_printString("Press joystick to Dash", 56, 70, 8, 1);
+    LCD_printString("Press left button to Jump", 49, 90, 8, 1);
+    LCD_printString("Eat mice to increase food", 49, 110, 8, 1);
+    LCD_printString("Sleep on pillow to progress day", 33, 130, 8, 1);
+    LCD_printString("Press joystick to start the game", 28, 150, 8, 1);
+    LCD_printString("Press right button to return to menu", 13, 170, 8, 1);
+    // Refresh LCD to display this frame
+    LCD_Refresh(&cfg0);
+    while(1){ 
+        Input_Read();
+        if (current_input.btn3_pressed) {
+            break;  // Exit instruction screen on button press
+        }
+    }
+}
+
+void game_over(void){
+    // Clear screen buffer
+    LCD_Fill_Buffer(0);
+    LCD_printString("Game Over", 15, 110, 8, 4);
+    // Refresh LCD to display this frame
+    LCD_Refresh(&cfg0);
+    HAL_Delay(2000);
 }

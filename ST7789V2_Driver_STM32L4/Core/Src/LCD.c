@@ -368,7 +368,32 @@ void LCD_Update_Background(const uint16_t x0, const uint16_t y0, const uint16_t 
   }
 }
 
-void LCD_Draw_Sprite_Scaled(const uint16_t x0, const uint16_t y0, const uint16_t nrows, const uint16_t ncols, const uint8_t *sprite, const uint8_t scale, const uint8_t direction){
+void LCD_Draw_Sprite_Scaled(const uint16_t x0, const uint16_t y0, const uint16_t nrows, const uint16_t ncols, const uint8_t *sprite, const uint8_t scale){
+  if (scale == 0) {
+    return;
+  }
+
+  for (int i = 0; i < nrows; i++) {
+    for (int j = 0 ; j < ncols ; j++) {
+      const int pixel = *((sprite + i * ncols) + j);
+      if (pixel != 255) {  // 255 is transparent
+        const uint16_t base_x = x0 + j * scale;
+        const uint16_t base_y = y0 + i * scale;
+        for (uint8_t dy = 0; dy < scale; dy++) {
+          for (uint8_t dx = 0; dx < scale; dx++) {
+            LCD_Set_Pixel(base_x + dx, base_y + dy, pixel);
+          }
+        }
+      }
+    }
+  }
+}
+
+void LCD_Draw_Sprite(const uint16_t x0, const uint16_t y0, const uint16_t nrows, const uint16_t ncols, const uint8_t *sprite){
+  LCD_Draw_Sprite_Scaled(x0, y0, nrows, ncols, sprite, 1);
+}
+
+void LCD_Draw_Sprite_Scaled_directional(const uint16_t x0, const uint16_t y0, const uint16_t nrows, const uint16_t ncols, const uint8_t *sprite, const uint8_t scale, const uint8_t direction){
   if (scale == 0) {
     return;
   }
@@ -392,8 +417,8 @@ void LCD_Draw_Sprite_Scaled(const uint16_t x0, const uint16_t y0, const uint16_t
   }
 }
 
-void LCD_Draw_Sprite(const uint16_t x0, const uint16_t y0, const uint16_t nrows, const uint16_t ncols, const uint8_t *sprite, const uint8_t direction){
-  LCD_Draw_Sprite_Scaled(x0, y0, nrows, ncols, sprite, 1, direction);
+void LCD_Draw_Sprite_directional(const uint16_t x0, const uint16_t y0, const uint16_t nrows, const uint16_t ncols, const uint8_t *sprite, const uint8_t direction){
+  LCD_Draw_Sprite_Scaled_directional(x0, y0, nrows, ncols, sprite, 1, direction);
 }
 
 void LCD_Draw_Sprite_Colour(const uint16_t x0, const uint16_t y0, const uint16_t nrows, const uint16_t ncols, const uint8_t *sprite, const uint8_t colour){

@@ -19,11 +19,24 @@ typedef struct{
     uint8_t tiles[15][15];
 }room;
 
+// Sleep point structure
+typedef struct {
+    uint16_t x;                      // X position
+    uint16_t y;                      // Y position
+    uint8_t width;                  // Width
+    uint8_t height;                 // Height
+    uint8_t room_index[2];          // Room coordinates [i][j]
+} Sleep_point;
+
+extern Sleep_point sleep_point;
+
+
 
 // room functions
-void render_blocks(void);
+void render_blocks(Sleep_point* sleep_point);
 uint8_t collision(uint16_t c_x, uint16_t c_y, uint16_t c_w, uint16_t c_h, uint16_t o_x, uint16_t o_y, uint16_t o_w, uint16_t o_h);
 void change_room(void);
+void Room_Init(Sleep_point* sleep_point);
 
 // npc
 extern int8_t is_npc; // flag to indicate if NPC is present in the current room
@@ -34,6 +47,7 @@ extern const room* map[3][3]; // 3x3 grid of rooms
 // current room variables
 extern const room* current_room;
 extern uint16_t current_room_index[2];
+
 
 // room layouts
 extern const room room_1;

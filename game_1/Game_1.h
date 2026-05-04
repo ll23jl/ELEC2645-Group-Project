@@ -90,7 +90,13 @@ void update_npc(void);
 
 // Game function prototypes
 
+void instruction(void);
+
+void new_day(void);
+
 void render_game(void);
+
+void game_over(void);
 
 MenuState Game1_Run(void);
 

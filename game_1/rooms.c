@@ -9,75 +9,91 @@
 #include "rooms.h"
 
 const room* current_room; // global variable to hold the current room data
-const room* prev_room; // global variable to hold the previous room data
+Sleep_point sleep_point; // global variable to hold the sleep point data
 uint16_t current_room_index[2] = {0, 0}; // index to track which room we are in
 int8_t is_npc = 0; // flag to indicate if NPC is present in the current room
+
 
 // change room
 void change_room(void) {
     //assign new room to current room
     current_room = map[current_room_index[0]][current_room_index[1]];
-    is_npc = rand() % 2; // randomly decide if NPC is present in this room (50% chance)
+    is_npc = 1; //rand() % 2; // randomly decide if NPC is present in this room (50% chance)
     if (is_npc) {
         NPC_init(&npc_character); // initialize NPC if present
-    }
+    } 
+    Room_Init(&sleep_point); // initialize room objects like sleep points
 
 }
 
 // place blocks in the environment based on room data
-void render_blocks(void) {
+void render_blocks(Sleep_point* sleep_point) {
     for (uint8_t i = 0; i < 15; i++) {
         for (uint8_t j = 0; j < 15; j++) {
             if (current_room->tiles[i][j] == 1) {
-                LCD_Draw_Sprite(j * 16, i * 16, 16, 16, (uint8_t*)wall_top_left, 0);
+                LCD_Draw_Sprite_directional(j * 16, i * 16, 16, 16, (uint8_t*)wall_top_left, 0);
             }
             else if (current_room->tiles[i][j] == 2) {
-                LCD_Draw_Sprite(j * 16, i * 16, 16, 16, (uint8_t*)wall_top, 0);
+                LCD_Draw_Sprite_directional(j * 16, i * 16, 16, 16, (uint8_t*)wall_top, 0);
             }
             else if (current_room->tiles[i][j] == 3) {
-                LCD_Draw_Sprite(j * 16, i * 16, 16, 16, (uint8_t*)wall_top_right, 0);
+                LCD_Draw_Sprite_directional(j * 16, i * 16, 16, 16, (uint8_t*)wall_top_right, 0);
             }
             else if (current_room->tiles[i][j] == 4) {
-                LCD_Draw_Sprite(j * 16, i * 16, 16, 16, (uint8_t*)wall_mid_left, 0);
+                LCD_Draw_Sprite_directional(j * 16, i * 16, 16, 16, (uint8_t*)wall_mid_left, 0);
             }
             else if (current_room->tiles[i][j] == 5) {
-                LCD_Draw_Sprite(j * 16, i * 16, 16, 16, (uint8_t*)wall_mid, 0);
+                LCD_Draw_Sprite_directional(j * 16, i * 16, 16, 16, (uint8_t*)wall_mid, 0);
             }
             else if (current_room->tiles[i][j] == 6) {
-                LCD_Draw_Sprite(j * 16, i * 16, 16, 16, (uint8_t*)wall_mid_right, 0);
+                LCD_Draw_Sprite_directional(j * 16, i * 16, 16, 16, (uint8_t*)wall_mid_right, 0);
             }
             else if (current_room->tiles[i][j] == 7) {
-                LCD_Draw_Sprite(j * 16, i * 16, 16, 16, (uint8_t*)wall_bottom_left, 0);
+                LCD_Draw_Sprite_directional(j * 16, i * 16, 16, 16, (uint8_t*)wall_bottom_left, 0);
             }
             else if (current_room->tiles[i][j] == 8) {
-                LCD_Draw_Sprite(j * 16, i * 16, 16, 16, (uint8_t*)wall_bottom, 0);
+                LCD_Draw_Sprite_directional(j * 16, i * 16, 16, 16, (uint8_t*)wall_bottom, 0);
             }
             else if (current_room->tiles[i][j] == 9) {
-                LCD_Draw_Sprite(j * 16, i * 16, 16, 16, (uint8_t*)wall_bottom_right, 0);
+                LCD_Draw_Sprite_directional(j * 16, i * 16, 16, 16, (uint8_t*)wall_bottom_right, 0);
             }
             else if (current_room->tiles[i][j] == 10) {
-                LCD_Draw_Sprite(j * 16, i * 16, 16, 16, (uint8_t*)wall_top_end, 0);
+                LCD_Draw_Sprite_directional(j * 16, i * 16, 16, 16, (uint8_t*)wall_top_end, 0);
             }
             else if (current_room->tiles[i][j] == 11) {
-                LCD_Draw_Sprite(j * 16, i * 16, 16, 16, (uint8_t*)wall_vertical, 0);
+                LCD_Draw_Sprite_directional(j * 16, i * 16, 16, 16, (uint8_t*)wall_vertical, 0);
             }
             else if (current_room->tiles[i][j] == 12) {
-                LCD_Draw_Sprite(j * 16, i * 16, 16, 16, (uint8_t*)wall_bottom_end, 0);
+                LCD_Draw_Sprite_directional(j * 16, i * 16, 16, 16, (uint8_t*)wall_bottom_end, 0);
             }
             else if (current_room->tiles[i][j] == 13) {
-                LCD_Draw_Sprite(j * 16, i * 16, 16, 16, (uint8_t*)wall_left_end, 0);
+                LCD_Draw_Sprite_directional(j * 16, i * 16, 16, 16, (uint8_t*)wall_left_end, 0);
             }
             else if (current_room->tiles[i][j] == 14) {
-                LCD_Draw_Sprite(j * 16, i * 16, 16, 16, (uint8_t*)wall_horizontal, 0);
+                LCD_Draw_Sprite_directional(j * 16, i * 16, 16, 16, (uint8_t*)wall_horizontal, 0);
             }
             else if (current_room->tiles[i][j] == 15) {
-                LCD_Draw_Sprite(j * 16, i * 16, 16, 16, (uint8_t*)wall_right_end, 0);
+                LCD_Draw_Sprite_directional(j * 16, i * 16, 16, 16, (uint8_t*)wall_right_end, 0);
             }
             else {
                 // empty tile, do nothing
             }
         }
     }
+    if (current_room_index[0] == sleep_point->room_index[0] && current_room_index[1] == sleep_point->room_index[1]) {
+        LCD_Draw_Sprite_directional(sleep_point->x, sleep_point->y, 32, 32, (uint8_t*)pillow, 0);
+    }    
+    
+}
+
+// Other objects initialisation
+void Room_Init(Sleep_point* sleep_point) {
+    sleep_point->x = 104;
+    sleep_point->y = 112;
+    sleep_point->width = 10;
+    sleep_point->height = 10;
+    sleep_point->room_index[0] = 1;
+    sleep_point->room_index[1] = 1;
 }
 
 // check collisions between a character and an object in the environment using AABB collision detection
@@ -159,8 +175,8 @@ const room room_3 = {
         {2, 14, 14, 9, 0, 0, 11, 0, 0, 13, 14, 14, 14, 14, 0}, 
         {6, 0, 0, 0, 0, 0, 11, 0, 0, 0, 0, 0, 0, 0, 4}, 
         {6, 0, 0, 0, 0, 0, 11, 0, 0, 0, 0, 0, 0, 0, 4}, 
-        {6, 0, 0, 0, 0, 0, 4, 14, 15, 0, 0, 0, 0, 0, 4}, 
-        {8, 14, 14, 15, 0, 0, 12, 0, 0, 0, 0, 0, 0, 0, 4}, 
+        {0, 2, 2, 3, 0, 0, 4, 14, 15, 0, 0, 0, 0, 0, 4}, 
+        {8, 8, 8, 9, 0, 0, 12, 0, 0, 0, 0, 0, 0, 0, 4}, 
         {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4}, 
         {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 0, 0, 4}, 
         {2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 6, 0, 0, 4}
@@ -260,7 +276,7 @@ const room room_8 = {
         {14, 14, 14, 14, 14, 14, 14,14, 14, 14, 14, 14, 14, 14, 2}, 
         {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4}, 
         {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4}, 
-        {14, 14, 14, 14, 14, 14, 14,14, 14, 14, 14, 3, 0, 0, 7}, 
+        {14, 14, 14, 14, 14, 15, 0,0, 13, 14, 14, 3, 0, 0, 7}, 
         {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 11, 0, 0, 0}, 
         {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 11, 0, 0, 0}, 
         {14, 14, 15, 0, 0, 13, 14, 14, 3, 0, 0, 7, 14, 14, 14}, 
@@ -284,7 +300,7 @@ const room room_9 = {
         {8, 14, 14, 14, 15, 0, 0, 7, 14, 14, 14, 15, 0, 0, 4}, 
         {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4}, 
         {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4}, 
-        {14, 14, 14, 14, 14, 14, 14,14, 14, 14, 14, 14, 14, 14, 0}, 
+        {14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 15, 0, 0, 4}, 
         {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4}, 
         {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4}, 
         {2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0}

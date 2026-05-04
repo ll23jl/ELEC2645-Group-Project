@@ -41,6 +41,8 @@ extern const uint8_t wall_left_end[16][16];
 extern const uint8_t wall_horizontal[16][16];
 extern const uint8_t wall_right_end[16][16];
 
+extern const uint8_t pillow[32][32];
+
 
 
 #endif // SPRITES_H
