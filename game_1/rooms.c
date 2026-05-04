@@ -18,7 +18,11 @@ int8_t is_npc = 0; // flag to indicate if NPC is present in the current room
 void change_room(void) {
     //assign new room to current room
     current_room = map[current_room_index[0]][current_room_index[1]];
-    is_npc = 1; //rand() % 2; // randomly decide if NPC is present in this room (50% chance)
+
+    // Randomly decide if NPC is present in this room 
+    // Reduce chance as days progress to increase difficulty
+    uint8_t npc_chance = 75 - day_counter; // Start at 75% chance and decrease by 1% each day
+    is_npc = (rand() % 100) < npc_chance; // NPC is present if random number is less than npc_chance
     if (is_npc) {
         NPC_init(&npc_character); // initialize NPC if present
     } 

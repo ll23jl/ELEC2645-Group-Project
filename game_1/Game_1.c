@@ -159,8 +159,18 @@ MenuState Game1_Run(void) {
             HAL_Delay(GAME1_FRAME_TIME_MS - frame_time);
         }
 
+        // lose condition: health reaches 0
         if(game_character.health == 0) {
             game_over();
+            // go back to menu after game over screen
+            exit_state = MENU_STATE_HOME;
+            break;  // Exit game loop
+        }
+
+        // win condition: survive 100 days
+        if(day_counter > 99) {
+            // player wins the game
+            game_win();
             // go back to menu after game over screen
             exit_state = MENU_STATE_HOME;
             break;  // Exit game loop
@@ -449,13 +459,6 @@ void update_character(Joystick_t* joy) {
         }
     }
 
-    // increase health if food is above 50%
-    if (game_character.food > 500 && game_character.health < 1000) {
-        game_character.health++; // Regenerate health if food is sufficient
-    }
-
-    // Update character FSM with current input
-    Character_Update(&game_character, joy, dash_pressed, jump_pressed);
 
     // Check for day progression
     // check if player collides with sleep point
@@ -471,13 +474,17 @@ void update_character(Joystick_t* joy) {
                 }
                 game_character.food = 500; // Consume some food to sleep
                 day_counter++;
-                new_day();
-                change_room(); // reload room to reset NPC and blocks
+                if (day_counter < 99) {
+                    new_day();
+                    change_room(); // reload room to reset NPC and blocks
+                }
             }
         }
     }
-}
 
+    // Update character FSM with current input
+    Character_Update(&game_character, joy, dash_pressed, jump_pressed);
+}
 
 
 // ===== NPC CHARACTER FUNCTIONS =====
@@ -683,6 +690,7 @@ void render_game(void) {
     LCD_Refresh(&cfg0);
 }
 
+// Display new day screen and pause briefly to show day progression
 void new_day(void){
     // Clear screen buffer
     LCD_Fill_Buffer(0);
@@ -695,6 +703,7 @@ void new_day(void){
     HAL_Delay(1500);
 }
 
+// Display instructions screen at the start of the game and wait for player to press button to start the game
 void instruction(void) {
     // Clear screen buffer
     LCD_Fill_Buffer(0);
@@ -716,10 +725,21 @@ void instruction(void) {
     }
 }
 
+// Display game over screen when player loses and pause briefly before returning to menu
 void game_over(void){
     // Clear screen buffer
     LCD_Fill_Buffer(0);
     LCD_printString("Game Over", 15, 110, 8, 4);
+    // Refresh LCD to display this frame
+    LCD_Refresh(&cfg0);
+    HAL_Delay(2000);
+}
+
+// Display win screen when player wins and pause briefly before returning to menu
+void game_win(void){
+    // Clear screen buffer
+    LCD_Fill_Buffer(0);
+    LCD_printString("You Win!", 30, 110, 8, 4);
     // Refresh LCD to display this frame
     LCD_Refresh(&cfg0);
     HAL_Delay(2000);

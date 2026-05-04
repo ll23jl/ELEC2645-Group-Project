@@ -71,6 +71,8 @@ typedef struct {
 extern Character game_character;  // Player character
 extern Character npc_character;   // NPC character
 
+// Global variable
+extern uint8_t day_counter; // Tracks the current day in the game
 
 // Character function prototypes
 
@@ -97,6 +99,8 @@ void new_day(void);
 void render_game(void);
 
 void game_over(void);
+
+void game_win(void);
 
 MenuState Game1_Run(void);
 
