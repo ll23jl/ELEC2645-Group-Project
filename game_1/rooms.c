@@ -7,6 +7,7 @@
 #include "sprites.h"
 #include "game_1.h"
 #include "rooms.h"
+#include "Character.h"
 
 const room* current_room; // global variable to hold the current room data
 Sleep_point sleep_point; // global variable to hold the sleep point data

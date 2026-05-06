@@ -60,6 +60,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     ${CMAKE_SOURCE_DIR}/game_3/Game_3.c
     ${CMAKE_SOURCE_DIR}/game_1/sprites.c
     ${CMAKE_SOURCE_DIR}/game_1/rooms.c
+    ${CMAKE_SOURCE_DIR}/game_1/Character.c
 )
 
 # Add include paths
