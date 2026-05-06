@@ -18,4 +18,7 @@
 
 MenuState Game3_Run(void);
 
+// global sprite for main menu
+extern const uint8_t player_sprite[];
+
 #endif // GAME_3_H

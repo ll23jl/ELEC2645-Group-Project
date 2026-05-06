@@ -3,7 +3,10 @@
 #include "InputHandler.h"
 #include "Joystick.h"
 #include "stm32l4xx_hal.h"
+#include <stdint.h>
 #include <stdio.h>
+#include "sprites.h"
+#include "Game_3.h"
 
 extern ST7789V2_cfg_t cfg0;  // LCD configuration from main.c
 extern Joystick_cfg_t joystick_cfg;  // Joystick configuration
@@ -11,14 +14,18 @@ extern Joystick_t joystick_data;     // Current joystick readings
 
 // Menu options
 static const char* menu_options[] = {
-    "Game 1",
+    "Mouse Chase",
     "Game 2", 
-    "Game 3"
+    "Beat Escape"
 };
 #define NUM_MENU_OPTIONS 3
 
 // Frame rate for menu (in milliseconds)
 #define MENU_FRAME_TIME_MS 30  // ~33 FPS
+
+// Sprite animations
+uint8_t m_frame_counter = 0;
+uint8_t m_animation_frame = 0;
 
 /**
  * @brief Render the home menu screen
@@ -38,11 +45,52 @@ static void render_home_menu(MenuSystem* menu) {
             // Highlight selected option with inverted colors
             // Draw a rectangle around selected option
             // We'll use simple marker instead
-            LCD_printString(">", 40, y_pos, 1, text_size);  // Arrow pointing to selection
+            LCD_printString(">", 50, y_pos, 1, text_size);  // Arrow pointing to selection
         }
         
         LCD_printString((char*)menu_options[i], 70, y_pos, 1, text_size);
+
     }
+
+    if (menu->selected_option == 0){
+            LCD_Set_Palette(PALETTE_CUSTOM);
+            if (m_animation_frame == 0) {
+                LCD_Draw_Sprite_directional(10, 54, 32, 32, (uint8_t*)cat_run1, 0);
+            } else if (m_animation_frame == 1) {
+                LCD_Draw_Sprite_directional(10, 54, 32, 32, (uint8_t*)cat_run2, 0);
+            } else if (m_animation_frame == 2) {
+                LCD_Draw_Sprite_directional(10, 54, 32, 32, (uint8_t*)cat_run3, 0);
+            } else {
+                LCD_Draw_Sprite_directional(10, 53, 32, 32, (uint8_t*)cat_run4, 0);
+            }
+    }
+    else if (menu->selected_option == 1){
+            LCD_Set_Palette(PALETTE_GREYSCALE);
+            if (m_animation_frame == 0) {
+                LCD_Draw_Sprite_directional(10, 94, 32, 32, (uint8_t*)cat_run1, 0);
+            } else if (m_animation_frame == 1) {
+                LCD_Draw_Sprite_directional(10, 94, 32, 32, (uint8_t*)cat_run2, 0);
+            } else if (m_animation_frame == 2) {
+                LCD_Draw_Sprite_directional(10, 94, 32, 32, (uint8_t*)cat_run3, 0);
+            } else {
+                LCD_Draw_Sprite_directional(10, 94, 32, 32, (uint8_t*)cat_run4, 0);
+            }
+    }
+    else if (menu->selected_option == 2){
+            LCD_Set_Palette(PALETTE_DEFAULT);
+            if (m_animation_frame == 0) {
+                LCD_Draw_Sprite_directional(8, 144, 24, 24, (uint8_t*)player_sprite, 0);
+            } else if (m_animation_frame == 1) {
+                LCD_Draw_Sprite_directional(11, 144, 24, 24, (uint8_t*)player_sprite, 0);
+            } else if (m_animation_frame == 2) {
+                LCD_Draw_Sprite_directional(14, 144, 24, 24, (uint8_t*)player_sprite, 1);
+            } else {
+                LCD_Draw_Sprite_directional(11, 144, 24, 24, (uint8_t*)player_sprite, 1);
+            }
+    }
+    else {
+            
+        }
     
     // Instructions
     LCD_printString("Press BT3", 50, 240, 1, 1);
@@ -108,6 +156,8 @@ MenuState Menu_Run(MenuSystem* menu) {
             break;  // Exit menu loop - game selected!
         }
         
+    
+
         // Render menu
         render_home_menu(menu);
         
@@ -116,6 +166,9 @@ MenuState Menu_Run(MenuSystem* menu) {
         if (frame_time < MENU_FRAME_TIME_MS) {
             HAL_Delay(MENU_FRAME_TIME_MS - frame_time);
         }
+
+        m_frame_counter ++;
+        m_animation_frame = (m_frame_counter/4) % 4;
     }
     
     return selected_game;  // Return which game was selected
