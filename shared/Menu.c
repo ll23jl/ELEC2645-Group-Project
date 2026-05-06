@@ -7,10 +7,12 @@
 #include <stdio.h>
 #include "sprites.h"
 #include "Game_3.h"
+#include "Buzzer.h"
 
 extern ST7789V2_cfg_t cfg0;  // LCD configuration from main.c
 extern Joystick_cfg_t joystick_cfg;  // Joystick configuration
 extern Joystick_t joystick_data;     // Current joystick readings
+extern Buzzer_cfg_t buzzer_cfg; // Buzzer control
 
 // Menu options
 static const char* menu_options[] = {
@@ -112,6 +114,12 @@ MenuState Menu_Run(MenuSystem* menu) {
 
     LCD_Set_Palette(PALETTE_DEFAULT); 
     
+    buzzer_tone(&buzzer_cfg, 1000, 30);  // 1kHz at 30% volume
+    HAL_Delay(50);  // Brief beep duration
+    buzzer_tone(&buzzer_cfg, 2000, 30);  // 1kHz at 30% volume
+    HAL_Delay(50);  // Brief beep duration
+    buzzer_off(&buzzer_cfg);  // Stop the buzzer
+
     // Menu's own loop - runs until game is selected
     while (1) {
         uint32_t frame_start = HAL_GetTick();
@@ -127,6 +135,9 @@ MenuState Menu_Run(MenuSystem* menu) {
         
         if (current_direction == S && last_direction != S) {  // Joystick pushed DOWN
             // Move selection down
+            buzzer_tone(&buzzer_cfg, 1200, 30);  // 1.2kHz at 30% volume
+            HAL_Delay(50);  // Brief beep duration
+            buzzer_off(&buzzer_cfg);  // Stop the buzzer
             menu->selected_option++;
             if (menu->selected_option >= NUM_MENU_OPTIONS) {
                 menu->selected_option = 0;  // Wrap around
@@ -134,6 +145,9 @@ MenuState Menu_Run(MenuSystem* menu) {
         } 
         else if (current_direction == N && last_direction != N) {  // Joystick pushed UP
             // Move selection up
+            buzzer_tone(&buzzer_cfg, 1200, 30);  // 1.2kHz at 30% volume
+            HAL_Delay(50);  // Brief beep duration
+            buzzer_off(&buzzer_cfg);  // Stop the buzzer
             if (menu->selected_option == 0) {
                 menu->selected_option = NUM_MENU_OPTIONS - 1;  // Wrap around
             } else {
@@ -146,6 +160,11 @@ MenuState Menu_Run(MenuSystem* menu) {
         // Handle button press to select current option
         if (current_input.btn3_pressed) {
             // User pressed button - select the highlighted option
+            buzzer_tone(&buzzer_cfg, 1000, 30);  // 1kHz at 30% volume
+            HAL_Delay(50);  // Brief beep duration
+            buzzer_tone(&buzzer_cfg, 2000, 30);  // 1kHz at 30% volume
+            HAL_Delay(50);  // Brief beep duration
+            buzzer_off(&buzzer_cfg);  // Stop the buzzer
             if (menu->selected_option == 0) {
                 selected_game = MENU_STATE_GAME_1;
             } else if (menu->selected_option == 1) {

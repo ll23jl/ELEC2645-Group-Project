@@ -82,6 +82,8 @@ MenuState Game1_Run(void) {
     // Play a brief startup sound
     buzzer_tone(&buzzer_cfg, 1000, 30);  // 1kHz at 30% volume
     HAL_Delay(50);  // Brief beep duration
+    buzzer_tone(&buzzer_cfg, 2000, 30);  // 1kHz at 30% volume
+    HAL_Delay(50);  // Brief beep duration
     buzzer_off(&buzzer_cfg);  // Stop the buzzer
     
     MenuState exit_state = MENU_STATE_HOME;  // Default: return to menu
@@ -120,6 +122,11 @@ MenuState Game1_Run(void) {
         // Check if button was pressed to jump
         if (current_input.btn4_pressed) {
             uint32_t current_time = HAL_GetTick();
+
+            buzzer_tone(&buzzer_cfg, 1200, 30);  // 1.2kHz at 30% volume
+            HAL_Delay(50);  // Brief beep duration
+            buzzer_off(&buzzer_cfg);  // Stop the buzzer  
+
             if ((current_time - jump_button_last_interrupt_time) > DEBOUNCE_DELAY_JUMP)
             {
                 jump_button_last_interrupt_time = current_time;
@@ -155,6 +162,7 @@ MenuState Game1_Run(void) {
             game_over();
             // go back to menu after game over screen
             exit_state = MENU_STATE_HOME;
+
             break;  // Exit game loop
         }
 
@@ -164,6 +172,7 @@ MenuState Game1_Run(void) {
             game_win();
             // go back to menu after game over screen
             exit_state = MENU_STATE_HOME;
+
             break;  // Exit game loop
         }
     }
