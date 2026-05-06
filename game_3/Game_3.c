@@ -1311,7 +1311,7 @@ static void render_stats_card(const char* title, uint8_t is_game_over)
     LCD_Refresh(&cfg0);
 }
 
-MenuState Game1_Run(void)
+MenuState Game3_Run(void)
 {
     MenuState exit_state = MENU_STATE_HOME;
     main_menu_selection = 0U;
