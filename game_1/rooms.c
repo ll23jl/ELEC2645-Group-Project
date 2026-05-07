@@ -22,7 +22,8 @@ void change_room(void) {
 
     // Randomly decide if NPC is present in this room 
     // Reduce chance as days progress to increase difficulty
-    uint8_t npc_chance = 75 - day_counter; // Start at 75% chance and decrease by 1% each day
+    uint8_t npc_chance = (150 - day_counter)/2; // Start at ~75% (acc 74% because integer division) chance and decrease by 0.5% each day 
+                                                // --- day 99 has only ~25% spawn chance.
     is_npc = (rand() % 100) < npc_chance; // NPC is present if random number is less than npc_chance
     if (is_npc) {
         NPC_init(&npc_character); // initialize NPC if present

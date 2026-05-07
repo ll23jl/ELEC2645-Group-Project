@@ -67,6 +67,8 @@ void Character_Draw(Character* character);
 
 void update_character(Joystick_t* joy);
 
+void cat_state(Character* character, int16_t move_x, int16_t move_y);
+
 // NPC function prototypes
 
 void NPC_init(Character* npc);

@@ -158,35 +158,9 @@ void Character_Update(Character* character, Joystick_t* joy, uint8_t dash_presse
     character->x = new_x;
     character->y = new_y;
 
+    // update character state
+    cat_state(character, move_x, move_y);
     
-    // ===== Update state (IDLE, WALKING, DASHING) =====
-    uint8_t is_moving = (move_x != 0 || move_y != 0);
-    
-    if (character->dash_counter > 0 && move_x == 1) {
-        character->state = CHAR_DASHING;
-        character->direction = 1;
-    } else if (character->dash_counter > 0 && move_x == -1) {
-        character->state = CHAR_DASHING;
-        character->direction = -1;
-    } else if (character->jump_counter > 0) {
-        character->state = CHAR_JUMPING;
-        if (move_x == 1) {character->direction = 1;}
-        else if (move_x == -1) {character->direction = -1;}
-        else { /* do nothing - direction stays the same as prev */ }
-    } else if (character->y > character->prev_y) {
-        character->state = CHAR_FALLING;
-        if (move_x == 1) {character->direction = 1;}
-        else if (move_x == -1) {character->direction = -1;}
-        else { /* do nothing - direction stays the same as prev */ }
-    } else if (is_moving && move_x == 1) {
-        character->state = CHAR_WALKING;
-        character->direction = 1;
-    } else if (is_moving && move_x == -1) {
-        character->state = CHAR_WALKING;
-        character->direction = -1;
-    } else {
-        character->state = CHAR_IDLE;
-    }
     
 }
 
@@ -310,7 +284,7 @@ void update_character(Joystick_t* joy) {
                 }
                 game_character.food = 500; // Consume some food to sleep
                 day_counter++;
-                if (day_counter < 99) {
+                if (day_counter < 100) {
                     new_day();
                     change_room(); // reload room to reset NPC and blocks
                 }
@@ -322,18 +296,49 @@ void update_character(Joystick_t* joy) {
     Character_Update(&game_character, joy, dash_pressed, jump_pressed);
 }
 
+void cat_state(Character* character, int16_t move_x, int16_t move_y) {
+    // ===== Update state (IDLE, WALKING, DASHING) =====
+    uint8_t is_moving = (move_x != 0 || move_y != 0);
+    
+    if (character->dash_counter > 0 && move_x == 1) {
+        character->state = CHAR_DASHING;
+        character->direction = 1;
+    } else if (character->dash_counter > 0 && move_x == -1) {
+        character->state = CHAR_DASHING;
+        character->direction = -1;
+    } else if (character->jump_counter > 0) {
+        character->state = CHAR_JUMPING;
+        if (move_x == 1) {character->direction = 1;}
+        else if (move_x == -1) {character->direction = -1;}
+        else { /* do nothing - direction stays the same as prev */ }
+    } else if (character->y > character->prev_y) {
+        character->state = CHAR_FALLING;
+        if (move_x == 1) {character->direction = 1;}
+        else if (move_x == -1) {character->direction = -1;}
+        else { /* do nothing - direction stays the same as prev */ }
+    } else if (is_moving && move_x == 1) {
+        character->state = CHAR_WALKING;
+        character->direction = 1;
+    } else if (is_moving && move_x == -1) {
+        character->state = CHAR_WALKING;
+        character->direction = -1;
+    } else {
+        character->state = CHAR_IDLE;
+    }
+}
+
 
 // ===== NPC CHARACTER FUNCTIONS =====
 
 // Initialize NPC in free tile with default state
 void NPC_init(Character* npc) {
 
-    for (uint8_t attempst = 0; attempst < 300; attempst++) { // try 100 times to find an empty tile to spawn npc
+    for (uint8_t attempt = 0; attempt < 300; attempt++) { // try 300 times to find an empty tile to spawn npc
         uint8_t i, j;
         i = rand() % 12 + 2; // random row other than outer wall
         j = rand() % 12 + 2; // random column other than outer wall
 
-        if (current_room->tiles[i][j] == 0 )//&& current_room->tiles[i+1][j] >0 ) // find an empty tile to spawn npc with a solid block underneath
+        if (current_room->tiles[i][j] == 0 && current_room->tiles[i+1][j] >0 ) // find an empty tile to spawn npc with a solid block underneath
         {
             npc->x = j * 16 + 8;       // Calculate npc's x centre position ( 16 x 16 pixel sprite)
             npc->y = i * 16;       // Calculate npc's y centre position
@@ -464,7 +469,7 @@ void NPC_Update(Character* npc, uint8_t x) {
 }
 
 // Generates random movement for NPC. 
-// Changes directions when npc_move_counter reaches 0, which creates a delay between direction changes for smoother movement. 
+// Changes directions when npc_move_counter reaches 0
 // The direction is randomly chosen to be left, right, or stationary. 
 // The NPC_Update function is then called to apply this movement logic and update the NPC's position and state accordingly.
 void update_npc() {
